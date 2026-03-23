@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GravTraffic — Portfolio</title>
+<style>
+:root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --border: #2a2a4a;
+    --text: #e8e8f0;
+    --dim: #8888aa;
+    --blue: #5b9aff;
+    --green: #4ade80;
+    --red: #ff6b6b;
+    --orange: #ffb347;
+    --purple: #b388ff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+/* Hero */
+.hero {
+    padding: 80px 24px 60px;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 0%, #1a1a40 0%, #0f0f1a 70%);
+}
+.hero h1 {
+    font-size: 56px; font-weight: 900;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero .tagline {
+    font-size: 22px; color: var(--dim); margin: 12px auto 0;
+    max-width: 550px; line-height: 1.5;
+}
+.hero .tagline strong { color: var(--text); }
+
+/* Container */
+.container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+
+/* Section */
+section { margin: 56px 0; }
+h2 {
+    font-size: 28px; font-weight: 700; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+}
+
+/* Analogy */
+.analogy {
+    background: linear-gradient(135deg, #1a1a2e, #1e2a3e);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 32px; margin: 24px 0;
+}
+.analogy h3 { font-size: 20px; color: var(--blue); margin-bottom: 16px; }
+.analogy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+.analogy-item {
+    background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px;
+    text-align: center;
+}
+.analogy-item .icon { font-size: 48px; margin-bottom: 8px; }
+.analogy-item .label { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.analogy-item .desc { font-size: 13px; color: var(--dim); }
+
+/* Simple explanation */
+.explain {
+    font-size: 17px; line-height: 1.8; color: #ccc;
+}
+.explain strong { color: var(--text); }
+.highlight {
+    display: inline; padding: 2px 8px; border-radius: 4px;
+    font-weight: 700;
+}
+.hl-red { background: rgba(255,107,107,0.15); color: var(--red); }
+.hl-blue { background: rgba(91,154,255,0.15); color: var(--blue); }
+.hl-green { background: rgba(74,222,128,0.15); color: var(--green); }
+
+/* Steps */
+.steps { display: flex; flex-direction: column; gap: 0; position: relative; }
+.step {
+    display: flex; gap: 20px; padding: 20px 0;
+    border-left: 3px solid var(--border); margin-left: 20px; padding-left: 24px;
+    position: relative;
+}
+.step::before {
+    content: attr(data-num); position: absolute; left: -16px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--blue); color: #fff; font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+}
+.step-content h4 { font-size: 16px; margin-bottom: 4px; }
+.step-content p { font-size: 14px; color: var(--dim); }
+
+/* Results */
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.result-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; text-align: center;
+}
+.result-card .number {
+    font-size: 40px; font-weight: 900;
+}
+.result-card .unit { font-size: 14px; color: var(--dim); margin-top: 4px; }
+.result-card .explain-small { font-size: 12px; color: var(--dim); margin-top: 8px; }
+
+/* Tech stack */
+.tech-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pill {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    background: var(--card); border: 1px solid var(--border); color: var(--dim);
+}
+.pill.main { color: var(--blue); border-color: rgba(91,154,255,0.3); }
+
+/* What I built */
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.feat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+}
+.feat .feat-icon { font-size: 24px; margin-bottom: 6px; }
+.feat .feat-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.feat .feat-desc { font-size: 12px; color: var(--dim); }
+
+/* CTA */
+.cta {
+    text-align: center; padding: 48px 24px;
+    background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+    border-top: 1px solid var(--border); margin-top: 48px;
+}
+.cta a {
+    display: inline-block; padding: 14px 32px; border-radius: 8px;
+    background: var(--blue); color: #fff; text-decoration: none;
+    font-weight: 700; font-size: 16px; transition: opacity 0.2s;
+}
+.cta a:hover { opacity: 0.85; }
+.cta .sub { color: var(--dim); font-size: 13px; margin-top: 12px; }
+
+@media (max-width: 600px) {
+    .hero h1 { font-size: 36px; }
+    .analogy-grid, .results-grid, .feat-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>GravTraffic</h1>
+    <div class="tagline">
+        Et si on simulait les <strong>embouteillages</strong> avec les
+        mêmes équations que celles qui gouvernent les <strong>galaxies</strong> ?
+    </div>
+</div>
+
+<div class="container">
+
+<!-- L'IDÉE -->
+<section>
+    <h2>L'idée en 30 secondes</h2>
+    <p class="explain">
+        Dans l'espace, les étoiles s'attirent par la <strong>gravité</strong>.
+        Les étoiles massives attirent tout vers elles — exactement comme une
+        voiture lente sur l'autoroute qui « aspire » les voitures derrière
+        elle dans un bouchon.
+    </p>
+    <br>
+    <p class="explain">
+        J'ai pris cette analogie au pied de la lettre : dans GravTraffic,
+        <strong>chaque voiture est traitée comme un corps gravitationnel</strong>.
+        Une voiture <span class="highlight hl-red">lente</span> a une masse
+        positive — elle attire les autres, elle crée un bouchon. Une voiture
+        <span class="highlight hl-blue">rapide</span> a une masse négative —
+        elle repousse les autres, elle fluidifie le trafic.
+    </p>
+    <br>
+    <p class="explain">
+        Le résultat ? Les embouteillages, les ondes de choc, les convois —
+        tout <span class="highlight hl-green">émerge naturellement</span> des
+        équations de la gravité, <strong>sans qu'on programme la moindre
+        règle de conduite</strong>.
+    </p>
+</section>
+
+<!-- ANALOGIE VISUELLE -->
+<section>
+    <div class="analogy">
+        <h3>L'analogie gravité ↔ trafic</h3>
+        <div class="analogy-grid">
+            <div class="analogy-item">
+                <div class="icon">🌑</div>
+                <div class="label" style="color:var(--red)">Trou noir = Bouchon</div>
+                <div class="desc">Un objet massif attire tout vers lui.<br>
+                Un véhicule lent « aspire » les voitures derrière lui.</div>
+            </div>
+            <div class="analogy-item">
+                <div class="icon">💨</div>
+                <div class="label" style="color:var(--blue)">Énergie noire = Fluidité</div>
+                <div class="desc">L'énergie noire repousse et accélère l'expansion.<br>
+                Un véhicule rapide repousse et disperse les voisins.</div>
+            </div>
+            <div class="analogy-item">
+                <div class="icon">🌊</div>
+                <div class="label" style="color:var(--orange)">Onde gravitationnelle = Onde de choc</div>
+                <div class="desc">Quand deux étoiles fusionnent, une onde se propage.<br>
+                Quand une voiture freine, le ralentissement remonte la file.</div>
+            </div>
+            <div class="analogy-item">
+                <div class="icon">🌀</div>
+                <div class="label" style="color:var(--purple)">Galaxie = Convoi</div>
+                <div class="desc">Les étoiles s'organisent en structures par gravité.<br>
+                Les voitures forment spontanément des pelotons.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section>
+    <h2>Comment ça marche</h2>
+    <div class="steps">
+        <div class="step" data-num="1">
+            <div class="step-content">
+                <h4>On mesure l'écart de vitesse</h4>
+                <p>Chaque voiture est comparée à la vitesse moyenne du trafic.
+                Plus lente = masse positive (attracteur). Plus rapide = masse négative (repousseur).</p>
+            </div>
+        </div>
+        <div class="step" data-num="2">
+            <div class="step-content">
+                <h4>On calcule les forces gravitationnelles</h4>
+                <p>Comme Newton l'a fait pour les planètes : chaque voiture exerce une force
+                sur toutes les autres. Même formule, adaptée au trafic.</p>
+            </div>
+        </div>
+        <div class="step" data-num="3">
+            <div class="step-content">
+                <h4>On fait avancer le temps</h4>
+                <p>Un intégrateur « leapfrog » (le même que dans les simulations de galaxies)
+                met à jour les positions et vitesses de manière stable.</p>
+            </div>
+        </div>
+        <div class="step" data-num="4">
+            <div class="step-content">
+                <h4>On observe ce qui émerge</h4>
+                <p>Sans aucune règle de conduite programmée, les bouchons se forment,
+                les ondes de choc remontent la file, le trafic s'auto-organise.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CE QUE J'AI CONSTRUIT -->
+<section>
+    <h2>Ce que j'ai construit</h2>
+    <div class="feat-grid">
+        <div class="feat">
+            <div class="feat-icon">⚙️</div>
+            <div class="feat-title">Moteur de physique</div>
+            <div class="feat-desc">Calcul N-corps gravitationnel avec algorithme Barnes-Hut
+            (le même qu'en astrophysique), optimisé pour des milliers de véhicules.</div>
+        </div>
+        <div class="feat">
+            <div class="feat-icon">🚀</div>
+            <div class="feat-title">Accélération ×323</div>
+            <div class="feat-desc">Compilation JIT avec Numba : le code Python est transformé
+            en code machine natif, 323 fois plus rapide que le Python standard.</div>
+        </div>
+        <div class="feat">
+            <div class="feat-icon">🌐</div>
+            <div class="feat-title">API REST temps réel</div>
+            <div class="feat-desc">Serveur FastAPI avec WebSocket pour streamer la simulation
+            en direct, prédiction T+15 minutes, métriques Prometheus.</div>
+        </div>
+        <div class="feat">
+            <div class="feat-icon">📊</div>
+            <div class="feat-title">Dashboard interactif</div>
+            <div class="feat-desc">Visualisation en temps réel dans le navigateur : carte des
+            véhicules, heatmap de congestion, contrôles play/pause, 5 scénarios.</div>
+        </div>
+        <div class="feat">
+            <div class="feat-icon">🐳</div>
+            <div class="feat-title">Déploiement Docker</div>
+            <div class="feat-desc">Dockerfile multi-stage, docker-compose dev/prod,
+            pipeline CI/CD GitHub Actions automatisé (lint → tests → build).</div>
+        </div>
+        <div class="feat">
+            <div class="feat-icon">🔬</div>
+            <div class="feat-title">Validation scientifique</div>
+            <div class="feat-desc">Le modèle reproduit le diagramme fondamental du trafic
+            (R² = 0.98) et génère des phénomènes d'émergence mesurables.</div>
+        </div>
+    </div>
+</section>
+
+<!-- RÉSULTATS -->
+<section>
+    <h2>Les résultats</h2>
+    <div class="results-grid">
+        <div class="result-card">
+            <div class="number" style="color:var(--green)">98%</div>
+            <div class="unit">de précision</div>
+            <div class="explain-small">Le simulateur reproduit la relation
+            vitesse-densité du trafic réel (R² = 0.98 vs modèle de Greenshields).</div>
+        </div>
+        <div class="result-card">
+            <div class="number" style="color:var(--blue)">508</div>
+            <div class="unit">tests automatisés</div>
+            <div class="explain-small">Chaque composant est testé : physique,
+            API, intégration, validité scientifique. 0 échec.</div>
+        </div>
+        <div class="result-card">
+            <div class="number" style="color:var(--orange)">323×</div>
+            <div class="unit">plus rapide</div>
+            <div class="explain-small">Grâce à la compilation JIT Numba :
+            2000 véhicules simulés en 17 ms au lieu de 5.5 secondes.</div>
+        </div>
+    </div>
+</section>
+
+<!-- TECH STACK -->
+<section>
+    <h2>Technologies utilisées</h2>
+    <div class="tech-pills">
+        <span class="pill main">Python 3.12</span>
+        <span class="pill main">NumPy / SciPy</span>
+        <span class="pill main">Numba JIT</span>
+        <span class="pill main">FastAPI</span>
+        <span class="pill main">WebSocket</span>
+        <span class="pill">Mesa ABM</span>
+        <span class="pill">Docker</span>
+        <span class="pill">GitHub Actions CI</span>
+        <span class="pill">Prometheus</span>
+        <span class="pill">HTML5 Canvas</span>
+        <span class="pill">CuPy (GPU)</span>
+        <span class="pill">Barnes-Hut O(N log N)</span>
+        <span class="pill">Leapfrog symplectique</span>
+        <span class="pill">Pydantic</span>
+    </div>
+</section>
+
+<!-- CE QUE J'AI APPRIS -->
+<section>
+    <h2>Ce que j'ai appris</h2>
+    <p class="explain" style="font-size: 15px;">
+        Ce projet m'a permis de toucher à beaucoup de domaines :
+        <strong>physique computationnelle</strong> (simulation N-corps, intégrateurs
+        symplectiques), <strong>algorithmique avancée</strong> (Barnes-Hut, quadtree),
+        <strong>optimisation haute performance</strong> (Numba JIT, GPU),
+        <strong>développement web</strong> (API REST, WebSocket, dashboard),
+        <strong>DevOps</strong> (Docker, CI/CD, monitoring Prometheus),
+        et <strong>rigueur scientifique</strong> (validation statistique,
+        revues systématiques par un agent Devil's Advocate).
+    </p>
+    <br>
+    <p class="explain" style="font-size: 15px;">
+        Le point le plus fascinant : il suffit d'appliquer les équations
+        de la gravité pour que les embouteillages <em>apparaissent tout seuls</em>.
+        Pas besoin de programmer « si la voiture devant freine, je freine ».
+        La physique s'en charge.
+    </p>
+</section>
+
+</div>
+
+<!-- CTA -->
+<div class="cta">
+    <a href="https://github.com/Actarus-Dy/GravTraffic">Voir le code sur GitHub</a>
+    <div class="sub">
+        Open source — MIT License — 72 fichiers — 19 727 lignes de code
+    </div>
+</div>
+
+</body>
+</html>

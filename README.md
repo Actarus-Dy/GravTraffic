@@ -15,6 +15,9 @@ formation, shock propagation, overtaking -- emerge naturally from gravitational
 interactions combined with a physically motivated drag enrichment. No
 car-following rules are coded; all collective behaviour is emergent.
 
+Part of the **Actarus-Dy Software** catalogue (26 applications, 8 domains,
+46 formulas).
+
 ---
 
 ## Quickstart
@@ -290,4 +293,4 @@ pip install -e ".[dev,api]"
 
 GravTraffic is released under the [MIT License](LICENSE).
 
-Copyright (c) 2026 Janus Civil Software.
+Copyright (c) 2026 Actarus-Dy Software.

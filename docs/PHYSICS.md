@@ -1,6 +1,6 @@
 # GravTraffic -- Physics Reference
 
-> **Project:** GravTraffic (C-01) -- Janus Civil Software Catalogue
+> **Project:** GravTraffic (C-01) -- Actarus-Dy Software Catalogue
 > **Version:** Phase 3 (2026-03-23)
 > **Audience:** Developers, researchers, reviewers validating the Janus transposition
 

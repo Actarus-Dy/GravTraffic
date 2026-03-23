@@ -2,7 +2,7 @@
 
 > **Version:** 0.2.0
 > **Date:** 2026-03-23
-> **Project:** GravTraffic (C-01) -- Janus Civil Software Catalogue
+> **Project:** GravTraffic (C-01) -- Actarus-Dy Software Catalogue
 
 ---
 

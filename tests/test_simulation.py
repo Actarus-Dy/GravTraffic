@@ -29,14 +29,18 @@ def sim_50() -> GravSimulation:
     """Create a GravSimulation with 50 vehicles on a 500 m road."""
     rng = np.random.default_rng(123)
     n = 50
-    positions = np.column_stack([
-        rng.uniform(0, 500, n),
-        rng.uniform(-5, 5, n),
-    ])
-    velocities = np.column_stack([
-        rng.uniform(10, 30, n),
-        np.zeros(n),
-    ])
+    positions = np.column_stack(
+        [
+            rng.uniform(0, 500, n),
+            rng.uniform(-5, 5, n),
+        ]
+    )
+    velocities = np.column_stack(
+        [
+            rng.uniform(10, 30, n),
+            np.zeros(n),
+        ]
+    )
     densities = rng.uniform(10, 80, n)
 
     sim = GravSimulation(G_s=2.0, beta=0.5, v_max=36.0, adaptive_dt=True)
@@ -52,7 +56,7 @@ class TestSimulationRunsWithoutError:
 
     def test_10_steps_no_exception(self, sim_50: GravSimulation) -> None:
         for _ in range(10):
-            result = sim_50.step()
+            sim_50.step()
         assert sim_50.step_count == 10
 
     def test_positions_remain_finite(self, sim_50: GravSimulation) -> None:
@@ -76,10 +80,12 @@ class TestMassAssignment:
         """A vehicle much slower than the mean should have positive mass."""
         n = 20
         # All vehicles at 25 m/s except one at 5 m/s (very slow)
-        positions = np.column_stack([
-            np.linspace(0, 500, n),
-            np.zeros(n),
-        ])
+        positions = np.column_stack(
+            [
+                np.linspace(0, 500, n),
+                np.zeros(n),
+            ]
+        )
         velocities = np.full((n, 2), 0.0, dtype=np.float64)
         velocities[:, 0] = 25.0
         velocities[0, 0] = 5.0  # slow outlier
@@ -94,10 +100,12 @@ class TestMassAssignment:
     def test_fast_vehicles_negative_mass(self) -> None:
         """A vehicle much faster than the mean should have negative mass."""
         n = 20
-        positions = np.column_stack([
-            np.linspace(0, 500, n),
-            np.zeros(n),
-        ])
+        positions = np.column_stack(
+            [
+                np.linspace(0, 500, n),
+                np.zeros(n),
+            ]
+        )
         velocities = np.full((n, 2), 0.0, dtype=np.float64)
         velocities[:, 0] = 15.0
         velocities[0, 0] = 35.0  # fast outlier
@@ -219,15 +227,19 @@ class TestSpeedLimiter:
         """After 20 steps, no vehicle should exceed v_max."""
         rng = np.random.default_rng(999)
         n = 30
-        positions = np.column_stack([
-            rng.uniform(0, 300, n),
-            rng.uniform(-5, 5, n),
-        ])
+        positions = np.column_stack(
+            [
+                rng.uniform(0, 300, n),
+                rng.uniform(-5, 5, n),
+            ]
+        )
         # Give some vehicles speeds near v_max to provoke clipping
-        velocities = np.column_stack([
-            rng.uniform(30, 36, n),
-            rng.uniform(-2, 2, n),
-        ])
+        velocities = np.column_stack(
+            [
+                rng.uniform(30, 36, n),
+                rng.uniform(-2, 2, n),
+            ]
+        )
         densities = rng.uniform(20, 80, n)
 
         v_max = 36.0
@@ -247,14 +259,18 @@ class TestSpeedLimiter:
         """With a very low v_max, all speeds should be clamped."""
         rng = np.random.default_rng(42)
         n = 20
-        positions = np.column_stack([
-            np.linspace(0, 400, n),
-            np.zeros(n),
-        ])
-        velocities = np.column_stack([
-            rng.uniform(10, 30, n),
-            np.zeros(n),
-        ])
+        positions = np.column_stack(
+            [
+                np.linspace(0, 400, n),
+                np.zeros(n),
+            ]
+        )
+        velocities = np.column_stack(
+            [
+                rng.uniform(10, 30, n),
+                np.zeros(n),
+            ]
+        )
         densities = np.full(n, 40.0, dtype=np.float64)
 
         v_max = 10.0
@@ -336,20 +352,26 @@ class TestLocalDensitiesUpdate:
         n = 100
         # 50 vehicles clustered in [0, 20] x [-1, 1]
         rng = np.random.default_rng(777)
-        cluster_pos = np.column_stack([
-            rng.uniform(0, 20, 50),
-            rng.uniform(-1, 1, 50),
-        ])
+        cluster_pos = np.column_stack(
+            [
+                rng.uniform(0, 20, 50),
+                rng.uniform(-1, 1, 50),
+            ]
+        )
         # 50 vehicles spread over [1000, 5000] x [-1, 1]
-        spread_pos = np.column_stack([
-            rng.uniform(1000, 5000, 50),
-            rng.uniform(-1, 1, 50),
-        ])
+        spread_pos = np.column_stack(
+            [
+                rng.uniform(1000, 5000, 50),
+                rng.uniform(-1, 1, 50),
+            ]
+        )
         positions = np.vstack([cluster_pos, spread_pos])
-        velocities = np.column_stack([
-            np.full(n, 20.0),
-            np.zeros(n),
-        ])
+        velocities = np.column_stack(
+            [
+                np.full(n, 20.0),
+                np.zeros(n),
+            ]
+        )
         densities_init = np.full(n, 30.0, dtype=np.float64)
 
         sim = GravSimulation(G_s=2.0, beta=0.5, adaptive_dt=False, dt=0.1)
@@ -389,18 +411,22 @@ class TestObstacles:
         """
         n = 6
         positions = np.zeros((n, 2), dtype=np.float64)
-        positions[0] = [0.0, 0.0]        # fast vehicle (test subject)
-        positions[1:, 0] = -500.0         # slow vehicles far away
+        positions[0] = [0.0, 0.0]  # fast vehicle (test subject)
+        positions[1:, 0] = -500.0  # slow vehicles far away
 
         velocities = np.zeros((n, 2), dtype=np.float64)
-        velocities[0] = [35.0, 0.0]      # fast
-        velocities[1:, 0] = 5.0           # slow
+        velocities[0] = [35.0, 0.0]  # fast
+        velocities[1:, 0] = 5.0  # slow
 
         densities = np.full(n, 30.0, dtype=np.float64)
 
         sim = GravSimulation(
-            G_s=2.0, beta=0.5, softening=10.0, v_max=36.0,
-            adaptive_dt=False, dt=0.1,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            v_max=36.0,
+            adaptive_dt=False,
+            dt=0.1,
         )
         sim.init_vehicles(positions, velocities, densities)
         return sim
@@ -408,9 +434,7 @@ class TestObstacles:
     def test_set_obstacles_stores_arrays(self) -> None:
         """set_obstacles stores positions and masses as float64 arrays."""
         sim = GravSimulation()
-        sim.init_vehicles(
-            np.zeros((2, 2)), np.ones((2, 2)) * 20.0, np.full(2, 30.0)
-        )
+        sim.init_vehicles(np.zeros((2, 2)), np.ones((2, 2)) * 20.0, np.full(2, 30.0))
         obs_pos = np.array([[100.0, 0.0], [200.0, 0.0]])
         obs_mass = np.array([50.0, 50.0])
         sim.set_obstacles(obs_pos, obs_mass)
@@ -425,12 +449,8 @@ class TestObstacles:
     def test_clear_obstacles_removes_all(self) -> None:
         """clear_obstacles resets to empty arrays."""
         sim = GravSimulation()
-        sim.init_vehicles(
-            np.zeros((2, 2)), np.ones((2, 2)) * 20.0, np.full(2, 30.0)
-        )
-        sim.set_obstacles(
-            np.array([[100.0, 0.0]]), np.array([50.0])
-        )
+        sim.init_vehicles(np.zeros((2, 2)), np.ones((2, 2)) * 20.0, np.full(2, 30.0))
+        sim.set_obstacles(np.array([[100.0, 0.0]]), np.array([50.0]))
         sim.clear_obstacles()
 
         assert sim._obstacle_positions.shape == (0, 2)
@@ -443,9 +463,7 @@ class TestObstacles:
         significant non-zero masses that interact with the obstacle.
         """
         n = 10
-        positions = np.column_stack([
-            np.linspace(0, 200, n), np.zeros(n)
-        ])
+        positions = np.column_stack([np.linspace(0, 200, n), np.zeros(n)])
         velocities = np.zeros((n, 2), dtype=np.float64)
         # Half slow (5 m/s), half fast (35 m/s) -> mean ~20 m/s
         velocities[:5, 0] = 5.0
@@ -454,20 +472,24 @@ class TestObstacles:
 
         # Run one step WITHOUT obstacles
         sim_a = GravSimulation(
-            G_s=2.0, beta=0.5, softening=10.0, adaptive_dt=False, dt=0.1,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            adaptive_dt=False,
+            dt=0.1,
         )
-        sim_a.init_vehicles(
-            positions.copy(), velocities.copy(), densities.copy()
-        )
+        sim_a.init_vehicles(positions.copy(), velocities.copy(), densities.copy())
         result_a = sim_a.step()
 
         # Run one step WITH a large positive obstacle near the vehicles
         sim_b = GravSimulation(
-            G_s=2.0, beta=0.5, softening=10.0, adaptive_dt=False, dt=0.1,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            adaptive_dt=False,
+            dt=0.1,
         )
-        sim_b.init_vehicles(
-            positions.copy(), velocities.copy(), densities.copy()
-        )
+        sim_b.init_vehicles(positions.copy(), velocities.copy(), densities.copy())
         sim_b.set_obstacles(
             np.array([[100.0, 0.0]], dtype=np.float64),
             np.array([200.0], dtype=np.float64),
@@ -476,43 +498,41 @@ class TestObstacles:
 
         # After one step, the obstacle affects the second half-kick so
         # velocities diverge immediately.  Positions diverge after 2+ steps.
-        assert not np.allclose(
-            result_a["velocities"], result_b["velocities"]
-        ), "Obstacle had no effect on vehicle velocities"
+        assert not np.allclose(result_a["velocities"], result_b["velocities"]), (
+            "Obstacle had no effect on vehicle velocities"
+        )
 
     def test_clear_obstacles_restores_baseline(self) -> None:
         """After clearing obstacles, forces match the no-obstacle baseline."""
         rng = np.random.default_rng(555)
         n = 5
-        positions = np.column_stack([
-            rng.uniform(0, 100, n), np.zeros(n)
-        ])
-        velocities = np.column_stack([
-            rng.uniform(15, 25, n), np.zeros(n)
-        ])
+        positions = np.column_stack([rng.uniform(0, 100, n), np.zeros(n)])
+        velocities = np.column_stack([rng.uniform(15, 25, n), np.zeros(n)])
         densities = np.full(n, 30.0, dtype=np.float64)
 
         sim = GravSimulation(
-            G_s=2.0, beta=0.5, softening=10.0, adaptive_dt=False, dt=0.1,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            adaptive_dt=False,
+            dt=0.1,
         )
-        sim.init_vehicles(
-            positions.copy(), velocities.copy(), densities.copy()
-        )
+        sim.init_vehicles(positions.copy(), velocities.copy(), densities.copy())
 
         # Set then clear obstacles before stepping
-        sim.set_obstacles(
-            np.array([[50.0, 0.0]]), np.array([100.0])
-        )
+        sim.set_obstacles(np.array([[50.0, 0.0]]), np.array([100.0]))
         sim.clear_obstacles()
         result_cleared = sim.step()
 
         # Baseline: fresh sim, never had obstacles
         sim2 = GravSimulation(
-            G_s=2.0, beta=0.5, softening=10.0, adaptive_dt=False, dt=0.1,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            adaptive_dt=False,
+            dt=0.1,
         )
-        sim2.init_vehicles(
-            positions.copy(), velocities.copy(), densities.copy()
-        )
+        sim2.init_vehicles(positions.copy(), velocities.copy(), densities.copy())
         result_baseline = sim2.step()
 
         np.testing.assert_allclose(

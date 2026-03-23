@@ -27,6 +27,7 @@ from gravtraffic.agents.vehicle_agent import VehicleAgent
 
 class StubModel(mesa.Model):
     """Minimal Mesa model used exclusively for testing agents."""
+
     pass
 
 
@@ -187,7 +188,6 @@ class TestSpeedKmh:
 
 
 class TestUpdateFromSimulation:
-
     def test_position_updated(self, default_agent: VehicleAgent) -> None:
         default_agent.update_from_simulation(
             position=np.array([500.0, 1.5]),
@@ -243,17 +243,17 @@ class TestMassTypeClassification:
     @pytest.mark.parametrize(
         "mass, expected_type",
         [
-            (0.5, "slow"),       # positive, above threshold
-            (0.11, "slow"),      # just above +threshold
-            (0.1, "neutral"),    # exactly at threshold boundary
-            (0.05, "neutral"),   # small positive
-            (0.0, "neutral"),    # zero
+            (0.5, "slow"),  # positive, above threshold
+            (0.11, "slow"),  # just above +threshold
+            (0.1, "neutral"),  # exactly at threshold boundary
+            (0.05, "neutral"),  # small positive
+            (0.0, "neutral"),  # zero
             (-0.05, "neutral"),  # small negative
-            (-0.1, "neutral"),   # exactly at -threshold boundary
-            (-0.11, "fast"),     # just below -threshold
-            (-0.5, "fast"),      # negative, below threshold
-            (-2.0, "fast"),      # large negative
-            (3.0, "slow"),       # large positive
+            (-0.1, "neutral"),  # exactly at -threshold boundary
+            (-0.11, "fast"),  # just below -threshold
+            (-0.5, "fast"),  # negative, below threshold
+            (-2.0, "fast"),  # large negative
+            (3.0, "slow"),  # large positive
         ],
     )
     def test_classification(
@@ -276,7 +276,6 @@ class TestMassTypeClassification:
 
 
 class TestToDict:
-
     def test_expected_keys(self, default_agent: VehicleAgent) -> None:
         d = default_agent.to_dict()
         expected_keys = {"id", "x", "y", "vx", "vy", "mass", "speed_kmh", "type"}
@@ -300,9 +299,7 @@ class TestToDict:
         assert d["vy"] == pytest.approx(0.5)
         assert d["mass"] == pytest.approx(0.75)
         assert d["type"] == "slow"
-        assert d["speed_kmh"] == pytest.approx(
-            math.sqrt(28.0**2 + 0.5**2) * 3.6, rel=1e-10
-        )
+        assert d["speed_kmh"] == pytest.approx(math.sqrt(28.0**2 + 0.5**2) * 3.6, rel=1e-10)
 
     def test_types_are_json_serialisable(self, default_agent: VehicleAgent) -> None:
         """All values must be plain Python types, not numpy."""
@@ -322,7 +319,6 @@ class TestToDict:
 
 
 class TestStep:
-
     def test_step_runs_without_error(self, default_agent: VehicleAgent) -> None:
         """step() should be a no-op and not raise."""
         default_agent.step()
@@ -343,7 +339,6 @@ class TestStep:
 
 
 class TestRepr:
-
     def test_repr_contains_id(self, default_agent: VehicleAgent) -> None:
         r = repr(default_agent)
         assert "VehicleAgent" in r

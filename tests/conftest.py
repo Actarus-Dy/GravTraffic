@@ -12,14 +12,16 @@ def rng():
 def sample_vehicles(rng):
     """100 vehicles with random speeds and positions on a 1km segment."""
     n = 100
-    dtype = np.dtype([
-        ("position_x", np.float64),
-        ("position_y", np.float64),
-        ("speed", np.float64),
-        ("local_density", np.float64),
-        ("v_max", np.float64),
-        ("mass", np.float64),
-    ])
+    dtype = np.dtype(
+        [
+            ("position_x", np.float64),
+            ("position_y", np.float64),
+            ("speed", np.float64),
+            ("local_density", np.float64),
+            ("v_max", np.float64),
+            ("mass", np.float64),
+        ]
+    )
     vehicles = np.zeros(n, dtype=dtype)
     vehicles["position_x"] = rng.uniform(0, 1000, n)
     vehicles["position_y"] = rng.uniform(-5, 5, n)  # 2 lanes ~10m wide

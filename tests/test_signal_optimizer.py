@@ -21,10 +21,10 @@ from gravtraffic.core.signal_optimizer import (
     optimize_signal_timing,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def intersection_pos() -> np.ndarray:
@@ -41,24 +41,32 @@ def symmetric_traffic(intersection_pos: np.ndarray) -> dict:
     rng = np.random.default_rng(42)
 
     # NS vehicles: approaching from +y and -y
-    ns_pos = np.column_stack([
-        rng.uniform(-5, 5, 10),
-        rng.uniform(50, 150, 10) * rng.choice([-1, 1], 10),
-    ])
-    ns_vel = np.column_stack([
-        np.zeros(10),
-        -np.sign(ns_pos[:, 1]) * 10.0,
-    ])
+    ns_pos = np.column_stack(
+        [
+            rng.uniform(-5, 5, 10),
+            rng.uniform(50, 150, 10) * rng.choice([-1, 1], 10),
+        ]
+    )
+    ns_vel = np.column_stack(
+        [
+            np.zeros(10),
+            -np.sign(ns_pos[:, 1]) * 10.0,
+        ]
+    )
 
     # EW vehicles: approaching from +x and -x
-    ew_pos = np.column_stack([
-        rng.uniform(50, 150, 10) * rng.choice([-1, 1], 10),
-        rng.uniform(-5, 5, 10),
-    ])
-    ew_vel = np.column_stack([
-        -np.sign(ew_pos[:, 0]) * 10.0,
-        np.zeros(10),
-    ])
+    ew_pos = np.column_stack(
+        [
+            rng.uniform(50, 150, 10) * rng.choice([-1, 1], 10),
+            rng.uniform(-5, 5, 10),
+        ]
+    )
+    ew_vel = np.column_stack(
+        [
+            -np.sign(ew_pos[:, 0]) * 10.0,
+            np.zeros(10),
+        ]
+    )
 
     positions = np.vstack([ns_pos, ew_pos]).astype(np.float64)
     velocities = np.vstack([ns_vel, ew_vel]).astype(np.float64)
@@ -74,6 +82,7 @@ def symmetric_traffic(intersection_pos: np.ndarray) -> dict:
 # ---------------------------------------------------------------------------
 # Test 1: estimate_phi_integral returns a finite float
 # ---------------------------------------------------------------------------
+
 
 class TestEstimatePhiIntegral:
     """Tests for estimate_phi_integral."""
@@ -118,8 +127,7 @@ class TestEstimatePhiIntegral:
             green_ew=30.0,
         )
         assert phi_a != phi_b, (
-            f"Expected different phi values for different timings, "
-            f"got phi_a={phi_a}, phi_b={phi_b}"
+            f"Expected different phi values for different timings, got phi_a={phi_a}, phi_b={phi_b}"
         )
 
     # -------------------------------------------------------------------
@@ -161,6 +169,7 @@ class TestEstimatePhiIntegral:
 # Test 3-5: optimize_signal_timing
 # ---------------------------------------------------------------------------
 
+
 class TestOptimizeSignalTiming:
     """Tests for optimize_signal_timing."""
 
@@ -201,9 +210,7 @@ class TestOptimizeSignalTiming:
         assert 15.0 <= result["green_ns"] <= 90.0
         assert result["green_ew"] >= 10.0
         # Cycle consistency: cycle = green_ns + green_ew + 10 (amber)
-        assert result["cycle_s"] == pytest.approx(
-            result["green_ns"] + result["green_ew"] + 10.0
-        )
+        assert result["cycle_s"] == pytest.approx(result["green_ns"] + result["green_ew"] + 10.0)
 
     def test_asymmetric_ns_heavy_favours_longer_green_ns(
         self, intersection_pos: np.ndarray
@@ -216,14 +223,18 @@ class TestOptimizeSignalTiming:
         rng = np.random.default_rng(123)
 
         # 30 NS vehicles approaching from +y
-        ns_pos = np.column_stack([
-            rng.uniform(-5, 5, 30),
-            rng.uniform(30, 150, 30),
-        ])
-        ns_vel = np.column_stack([
-            np.zeros(30),
-            np.full(30, -8.0),
-        ])
+        ns_pos = np.column_stack(
+            [
+                rng.uniform(-5, 5, 30),
+                rng.uniform(30, 150, 30),
+            ]
+        )
+        ns_vel = np.column_stack(
+            [
+                np.zeros(30),
+                np.full(30, -8.0),
+            ]
+        )
 
         # 2 EW vehicles (light traffic)
         ew_pos = np.array([[100.0, 2.0], [-100.0, -2.0]], dtype=np.float64)
@@ -233,9 +244,7 @@ class TestOptimizeSignalTiming:
         velocities = np.vstack([ns_vel, ew_vel]).astype(np.float64)
         masses = np.ones(32, dtype=np.float64) * 5.0
 
-        result = optimize_signal_timing(
-            positions, velocities, masses, intersection_pos
-        )
+        result = optimize_signal_timing(positions, velocities, masses, intersection_pos)
 
         assert result["green_ns"] > result["green_ew"], (
             f"Expected green_ns > green_ew for NS-heavy traffic, "
@@ -253,22 +262,24 @@ class TestOptimizeSignalTiming:
         ns_vel = np.array([[0.0, -8.0], [0.0, 8.0]], dtype=np.float64)
 
         # 30 EW vehicles approaching from +x
-        ew_pos = np.column_stack([
-            rng.uniform(30, 150, 30),
-            rng.uniform(-5, 5, 30),
-        ])
-        ew_vel = np.column_stack([
-            np.full(30, -8.0),
-            np.zeros(30),
-        ])
+        ew_pos = np.column_stack(
+            [
+                rng.uniform(30, 150, 30),
+                rng.uniform(-5, 5, 30),
+            ]
+        )
+        ew_vel = np.column_stack(
+            [
+                np.full(30, -8.0),
+                np.zeros(30),
+            ]
+        )
 
         positions = np.vstack([ns_pos, ew_pos]).astype(np.float64)
         velocities = np.vstack([ns_vel, ew_vel]).astype(np.float64)
         masses = np.ones(32, dtype=np.float64) * 5.0
 
-        result = optimize_signal_timing(
-            positions, velocities, masses, intersection_pos
-        )
+        result = optimize_signal_timing(positions, velocities, masses, intersection_pos)
 
         assert result["green_ew"] > result["green_ns"], (
             f"Expected green_ew > green_ns for EW-heavy traffic, "
@@ -295,6 +306,7 @@ class TestOptimizeSignalTiming:
 # Test 7-9: Velocity-dependent behaviour (DA audit C-06)
 # ---------------------------------------------------------------------------
 
+
 class TestVelocityDependence:
     """Verify that real velocities change optimizer results vs zero velocities.
 
@@ -311,27 +323,41 @@ class TestVelocityDependence:
         """estimate_phi_integral must give different values for approaching
         vehicles vs stationary vehicles."""
         # Vehicles approaching the intersection from +y at 10 m/s
-        positions = np.array([
-            [0.0, 80.0],
-            [0.0, 120.0],
-            [0.0, 160.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 80.0],
+                [0.0, 120.0],
+                [0.0, 160.0],
+            ],
+            dtype=np.float64,
+        )
         masses = np.array([5.0, 5.0, 5.0], dtype=np.float64)
 
-        vel_real = np.array([
-            [0.0, -10.0],
-            [0.0, -10.0],
-            [0.0, -10.0],
-        ], dtype=np.float64)
+        vel_real = np.array(
+            [
+                [0.0, -10.0],
+                [0.0, -10.0],
+                [0.0, -10.0],
+            ],
+            dtype=np.float64,
+        )
         vel_zero = np.zeros((3, 2), dtype=np.float64)
 
         phi_real = estimate_phi_integral(
-            positions, vel_real, masses, intersection_pos,
-            green_ns=60.0, green_ew=50.0,
+            positions,
+            vel_real,
+            masses,
+            intersection_pos,
+            green_ns=60.0,
+            green_ew=50.0,
         )
         phi_zero = estimate_phi_integral(
-            positions, vel_zero, masses, intersection_pos,
-            green_ns=60.0, green_ew=50.0,
+            positions,
+            vel_zero,
+            masses,
+            intersection_pos,
+            green_ns=60.0,
+            green_ew=50.0,
         )
 
         assert phi_real != phi_zero, (
@@ -345,22 +371,33 @@ class TestVelocityDependence:
         """Vehicles moving toward the intersection should produce a more
         negative (stronger congestion) phi integral than stationary ones,
         because they get closer to the red-light obstacles over time."""
-        positions = np.array([
-            [0.0, 80.0],
-            [0.0, 120.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 80.0],
+                [0.0, 120.0],
+            ],
+            dtype=np.float64,
+        )
         masses = np.array([5.0, 5.0], dtype=np.float64)
 
         vel_approach = np.array([[0.0, -10.0], [0.0, -10.0]], dtype=np.float64)
         vel_zero = np.zeros((2, 2), dtype=np.float64)
 
         phi_approach = estimate_phi_integral(
-            positions, vel_approach, masses, intersection_pos,
-            green_ns=60.0, green_ew=50.0,
+            positions,
+            vel_approach,
+            masses,
+            intersection_pos,
+            green_ns=60.0,
+            green_ew=50.0,
         )
         phi_static = estimate_phi_integral(
-            positions, vel_zero, masses, intersection_pos,
-            green_ns=60.0, green_ew=50.0,
+            positions,
+            vel_zero,
+            masses,
+            intersection_pos,
+            green_ns=60.0,
+            green_ew=50.0,
         )
 
         # Approaching vehicles get closer to obstacles -> stronger (more negative) phi
@@ -369,43 +406,45 @@ class TestVelocityDependence:
             f"got phi_approach={phi_approach}, phi_static={phi_static}"
         )
 
-    def test_optimizer_uses_velocity_information(
-        self, intersection_pos: np.ndarray
-    ) -> None:
+    def test_optimizer_uses_velocity_information(self, intersection_pos: np.ndarray) -> None:
         """optimize_signal_timing must produce different results with
         real approaching velocities vs zero velocities for asymmetric traffic."""
         rng = np.random.default_rng(789)
 
         # 20 NS vehicles approaching fast, 5 EW vehicles stationary
-        ns_pos = np.column_stack([
-            rng.uniform(-5, 5, 20),
-            rng.uniform(50, 180, 20),
-        ])
-        ns_vel_real = np.column_stack([
-            np.zeros(20),
-            np.full(20, -12.0),  # approaching at 12 m/s
-        ])
+        ns_pos = np.column_stack(
+            [
+                rng.uniform(-5, 5, 20),
+                rng.uniform(50, 180, 20),
+            ]
+        )
+        ns_vel_real = np.column_stack(
+            [
+                np.zeros(20),
+                np.full(20, -12.0),  # approaching at 12 m/s
+            ]
+        )
 
-        ew_pos = np.column_stack([
-            rng.uniform(50, 100, 5),
-            rng.uniform(-5, 5, 5),
-        ])
-        ew_vel_real = np.column_stack([
-            np.full(5, -5.0),  # slow approach
-            np.zeros(5),
-        ])
+        ew_pos = np.column_stack(
+            [
+                rng.uniform(50, 100, 5),
+                rng.uniform(-5, 5, 5),
+            ]
+        )
+        ew_vel_real = np.column_stack(
+            [
+                np.full(5, -5.0),  # slow approach
+                np.zeros(5),
+            ]
+        )
 
         positions = np.vstack([ns_pos, ew_pos]).astype(np.float64)
         vel_real = np.vstack([ns_vel_real, ew_vel_real]).astype(np.float64)
         vel_zero = np.zeros_like(vel_real)
         masses = np.ones(25, dtype=np.float64) * 5.0
 
-        result_real = optimize_signal_timing(
-            positions, vel_real, masses, intersection_pos
-        )
-        result_zero = optimize_signal_timing(
-            positions, vel_zero, masses, intersection_pos
-        )
+        result_real = optimize_signal_timing(positions, vel_real, masses, intersection_pos)
+        result_zero = optimize_signal_timing(positions, vel_zero, masses, intersection_pos)
 
         # The phi integrals should differ since vehicle trajectories differ
         assert result_real["phi_integral"] != result_zero["phi_integral"], (

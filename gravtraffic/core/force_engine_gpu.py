@@ -59,13 +59,10 @@ class ForceEngineGPU:
 
     __slots__ = ("G_s", "epsilon", "max_n", "_cpu_fallback")
 
-    def __init__(
-        self, G_s: float = 5.0, softening: float = 10.0, max_n: int = 10_000
-    ) -> None:
+    def __init__(self, G_s: float = 5.0, softening: float = 10.0, max_n: int = 10_000) -> None:
         if not GPU_AVAILABLE:
             raise RuntimeError(
-                "CuPy is required for GPU acceleration. "
-                "Install with: pip install cupy-cuda12x"
+                "CuPy is required for GPU acceleration. Install with: pip install cupy-cuda12x"
             )
         self.G_s: float = float(G_s)
         self.epsilon: float = float(softening)
@@ -111,14 +108,12 @@ class ForceEngineGPU:
             if self._cpu_fallback is None:
                 from gravtraffic.core.force_engine import ForceEngine
 
-                self._cpu_fallback = ForceEngine(
-                    G_s=self.G_s, softening=self.epsilon
-                )
+                self._cpu_fallback = ForceEngine(G_s=self.G_s, softening=self.epsilon)
             return self._cpu_fallback.compute_all(positions, masses, theta=theta)
 
         # Transfer to GPU
         pos_gpu = cp.asarray(positions)  # (N, 2)
-        mass_gpu = cp.asarray(masses)    # (N,)
+        mass_gpu = cp.asarray(masses)  # (N,)
 
         eps2 = self.epsilon * self.epsilon
         G_s = self.G_s
@@ -129,8 +124,8 @@ class ForceEngineGPU:
 
         # Softened distance: d[i,j] = sqrt(dx² + dy² + eps²)
         d2 = cp.sum(diff * diff, axis=2) + eps2  # (N, N)
-        d = cp.sqrt(d2)                            # (N, N)
-        d3 = d2 * d                                # (N, N)
+        d = cp.sqrt(d2)  # (N, N)
+        d3 = d2 * d  # (N, N)
 
         # Force coefficient: G_s * m_i * m_j / d³
         # mass_i: (N, 1), mass_j: (1, N) -> (N, N)

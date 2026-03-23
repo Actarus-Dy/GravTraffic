@@ -22,7 +22,6 @@ import pytest
 
 from gravtraffic.core.force_engine import ForceEngine
 
-
 # ======================================================================
 # Fixtures
 # ======================================================================
@@ -107,9 +106,7 @@ class TestSameSignAttraction:
 class TestTwoNegativeMasses:
     """Two negative masses: m_i*m_j > 0, so they attract like positive pairs."""
 
-    def test_two_negative_masses_same_behavior_as_positive(
-        self, engine: ForceEngine
-    ) -> None:
+    def test_two_negative_masses_same_behavior_as_positive(self, engine: ForceEngine) -> None:
         """Force between (-2, -3) should have same sign structure as (2, 3)."""
         dx, dy = 50.0, 30.0
 
@@ -203,7 +200,7 @@ class TestSofteningRegularization:
 
         # Maximum possible force magnitude at d~0 is G_s * m_i * m_j / epsilon^2
         # = 9.8 * 1 * 1 / 100 = 0.098
-        max_force = engine.G_s * 1.0 * 1.0 / (engine.epsilon ** 2)
+        max_force = engine.G_s * 1.0 * 1.0 / (engine.epsilon**2)
         assert abs(fx) <= max_force + 1e-10
 
     def test_softening_controls_max_force(self) -> None:
@@ -241,9 +238,7 @@ class TestInverseSquareFalloff:
 
         assert abs(fx_near) > abs(fx_far)
 
-    def test_inverse_square_ratio_large_distance(
-        self, engine_tiny_softening: ForceEngine
-    ) -> None:
+    def test_inverse_square_ratio_large_distance(self, engine_tiny_softening: ForceEngine) -> None:
         """At large d >> epsilon, ratio of forces at d and 2d should be ~4.
 
         F ~ 1/d^2 for d >> epsilon, so F(d) / F(2d) ~ 4.
@@ -355,8 +350,8 @@ class TestAnalytical2Body:
         m_i, m_j = 2.0, 3.0
         dx, dy = 100.0, 0.0
 
-        d = math.sqrt(dx ** 2 + dy ** 2 + engine.epsilon ** 2)
-        d3 = d ** 3
+        d = math.sqrt(dx**2 + dy**2 + engine.epsilon**2)
+        d3 = d**3
         expected_fx = 9.8 * m_i * m_j / d3 * dx
         expected_fy = 0.0
 
@@ -385,7 +380,7 @@ class TestAnalytical2Body:
         dx, dy = 1.0, 1.0
 
         d = math.sqrt(2.0 + 1e-20)  # effectively sqrt(2)
-        d3 = d ** 3
+        d3 = d**3
 
         expected_fx = 1.0 * 1.0 * 1.0 / d3 * 1.0
         expected_fy = 1.0 * 1.0 * 1.0 / d3 * 1.0
@@ -400,9 +395,7 @@ class TestAnalytical2Body:
 
     def test_compute_all_matches_force_pair(self, engine: ForceEngine) -> None:
         """compute_all_naive must produce identical results to manual force_pair."""
-        positions = np.array(
-            [[0.0, 0.0], [100.0, 0.0], [50.0, 86.6]], dtype=np.float64
-        )
+        positions = np.array([[0.0, 0.0], [100.0, 0.0], [50.0, 86.6]], dtype=np.float64)
         masses = np.array([2.0, -3.0, 1.5], dtype=np.float64)
 
         forces = engine.compute_all_naive(positions, masses)

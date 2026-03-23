@@ -21,12 +21,11 @@ import numpy as np
 import pytest
 
 from gravtraffic.core.force_engine import ForceEngine
-from gravtraffic.core.quadtree import QuadTree
-
 
 # ------------------------------------------------------------------
 # Fixtures
 # ------------------------------------------------------------------
+
 
 @pytest.fixture
 def engine() -> ForceEngine:
@@ -80,7 +79,7 @@ def _max_relative_error(
         return 0.0
 
     # RMS force magnitude.
-    rms_force = np.sqrt(np.mean(exact_norms ** 2))
+    rms_force = np.sqrt(np.mean(exact_norms**2))
     threshold = force_threshold_fraction * rms_force
 
     # Skip particles with negligible force (near-symmetry cancellation).
@@ -96,6 +95,7 @@ def _max_relative_error(
 # Test 1: Barnes-Hut vs naive, 100 particles, theta=0.5, < 1% error
 # ------------------------------------------------------------------
 
+
 def test_barnes_hut_vs_naive_100_theta05(engine: ForceEngine) -> None:
     """100 random particles, theta=0.5: max relative error < 1%."""
     positions, masses = _random_particles(100, seed=1)
@@ -104,14 +104,13 @@ def test_barnes_hut_vs_naive_100_theta05(engine: ForceEngine) -> None:
     forces_bh = engine.compute_all(positions, masses, theta=0.5)
 
     max_err = _max_relative_error(forces_bh, forces_naive)
-    assert max_err < 0.01, (
-        f"Barnes-Hut relative error {max_err:.6f} exceeds 1% at theta=0.5"
-    )
+    assert max_err < 0.01, f"Barnes-Hut relative error {max_err:.6f} exceeds 1% at theta=0.5"
 
 
 # ------------------------------------------------------------------
 # Test 2: Barnes-Hut vs naive, 500 particles, theta=0.7, < 2% error
 # ------------------------------------------------------------------
+
 
 def test_barnes_hut_vs_naive_500_theta07(engine: ForceEngine) -> None:
     """500 random particles, theta=0.7: max relative error < 2%."""
@@ -121,14 +120,13 @@ def test_barnes_hut_vs_naive_500_theta07(engine: ForceEngine) -> None:
     forces_bh = engine.compute_all(positions, masses, theta=0.7)
 
     max_err = _max_relative_error(forces_bh, forces_naive)
-    assert max_err < 0.02, (
-        f"Barnes-Hut relative error {max_err:.6f} exceeds 2% at theta=0.7"
-    )
+    assert max_err < 0.02, f"Barnes-Hut relative error {max_err:.6f} exceeds 2% at theta=0.7"
 
 
 # ------------------------------------------------------------------
 # Test 3: Exact at theta=0 — must match naive to machine precision
 # ------------------------------------------------------------------
+
 
 def test_exact_at_theta_zero(engine: ForceEngine) -> None:
     """At theta=0 Barnes-Hut should never use COM approximation."""
@@ -138,7 +136,10 @@ def test_exact_at_theta_zero(engine: ForceEngine) -> None:
     forces_bh = engine.compute_all(positions, masses, theta=0.0)
 
     np.testing.assert_allclose(
-        forces_bh, forces_naive, rtol=1e-12, atol=1e-15,
+        forces_bh,
+        forces_naive,
+        rtol=1e-12,
+        atol=1e-15,
         err_msg="theta=0 Barnes-Hut does not match naive exactly",
     )
 
@@ -146,6 +147,7 @@ def test_exact_at_theta_zero(engine: ForceEngine) -> None:
 # ------------------------------------------------------------------
 # Test 4: Single particle — no self-force
 # ------------------------------------------------------------------
+
 
 def test_single_particle_no_self_force(engine: ForceEngine) -> None:
     """A lone particle should experience zero force."""
@@ -155,7 +157,9 @@ def test_single_particle_no_self_force(engine: ForceEngine) -> None:
     forces = engine.compute_all(positions, masses, theta=0.5)
     assert forces.shape == (1, 2)
     np.testing.assert_allclose(
-        forces, 0.0, atol=1e-15,
+        forces,
+        0.0,
+        atol=1e-15,
         err_msg="Single particle experiences non-zero self-force",
     )
 
@@ -164,12 +168,16 @@ def test_single_particle_no_self_force(engine: ForceEngine) -> None:
 # Test 5: Two particles — matches force_pair exactly
 # ------------------------------------------------------------------
 
+
 def test_two_particles_match_force_pair(engine: ForceEngine) -> None:
     """Two-particle Barnes-Hut must reproduce force_pair exactly."""
-    positions = np.array([
-        [100.0, 200.0],
-        [400.0, 600.0],
-    ], dtype=np.float64)
+    positions = np.array(
+        [
+            [100.0, 200.0],
+            [400.0, 600.0],
+        ],
+        dtype=np.float64,
+    )
     masses = np.array([2.0, -3.0], dtype=np.float64)
 
     # Direct pair computation.
@@ -182,12 +190,16 @@ def test_two_particles_match_force_pair(engine: ForceEngine) -> None:
 
     # Force on particle 0 should be (fx_01, fy_01).
     np.testing.assert_allclose(
-        forces_bh[0], [fx_01, fy_01], rtol=1e-12,
+        forces_bh[0],
+        [fx_01, fy_01],
+        rtol=1e-12,
         err_msg="Two-particle BH force on p0 does not match force_pair",
     )
     # Force on particle 1 should be Newton's third law opposite.
     np.testing.assert_allclose(
-        forces_bh[1], [-fx_01, -fy_01], rtol=1e-12,
+        forces_bh[1],
+        [-fx_01, -fy_01],
+        rtol=1e-12,
         err_msg="Two-particle BH force on p1 does not satisfy Newton III",
     )
 
@@ -195,6 +207,7 @@ def test_two_particles_match_force_pair(engine: ForceEngine) -> None:
 # ------------------------------------------------------------------
 # Test 6: Performance — 10k particles completes in reasonable time
 # ------------------------------------------------------------------
+
 
 def test_performance_10k_particles(engine: ForceEngine) -> None:
     """10,000 particles should complete without hanging (< 60 seconds)."""
@@ -205,14 +218,13 @@ def test_performance_10k_particles(engine: ForceEngine) -> None:
     elapsed = time.perf_counter() - start
 
     assert forces.shape == (10_000, 2)
-    assert elapsed < 60.0, (
-        f"Barnes-Hut on 10k particles took {elapsed:.1f}s (limit 60s)"
-    )
+    assert elapsed < 60.0, f"Barnes-Hut on 10k particles took {elapsed:.1f}s (limit 60s)"
 
 
 # ------------------------------------------------------------------
 # Additional robustness tests
 # ------------------------------------------------------------------
+
 
 def test_empty_array(engine: ForceEngine) -> None:
     """Empty input should return empty (0, 2) array."""
@@ -225,11 +237,14 @@ def test_empty_array(engine: ForceEngine) -> None:
 
 def test_coincident_particles(engine: ForceEngine) -> None:
     """Particles at the same location should not produce infinities."""
-    positions = np.array([
-        [100.0, 100.0],
-        [100.0, 100.0],
-        [100.0, 100.0],
-    ], dtype=np.float64)
+    positions = np.array(
+        [
+            [100.0, 100.0],
+            [100.0, 100.0],
+            [100.0, 100.0],
+        ],
+        dtype=np.float64,
+    )
     masses = np.array([1.0, 2.0, 3.0], dtype=np.float64)
 
     forces_bh = engine.compute_all(positions, masses, theta=0.5)
@@ -237,7 +252,10 @@ def test_coincident_particles(engine: ForceEngine) -> None:
 
     assert np.all(np.isfinite(forces_bh)), "Barnes-Hut produced non-finite values"
     np.testing.assert_allclose(
-        forces_bh, forces_naive, rtol=1e-12, atol=1e-15,
+        forces_bh,
+        forces_naive,
+        rtol=1e-12,
+        atol=1e-15,
         err_msg="Coincident particles: BH does not match naive",
     )
 
@@ -252,6 +270,4 @@ def test_all_positive_masses_accuracy(engine: ForceEngine) -> None:
     forces_bh = engine.compute_all(positions, masses, theta=0.5)
 
     max_err = _max_relative_error(forces_bh, forces_naive)
-    assert max_err < 0.01, (
-        f"All-positive masses: relative error {max_err:.6f} exceeds 1%"
-    )
+    assert max_err < 0.01, f"All-positive masses: relative error {max_err:.6f} exceeds 1%"

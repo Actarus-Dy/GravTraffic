@@ -61,9 +61,7 @@ class RoadNetwork:
             }
             # Build geometry from nodes if not supplied explicitly.
             if "geometry" in e and e["geometry"]:
-                rec["geometry"] = [
-                    (np.float64(x), np.float64(y)) for x, y in e["geometry"]
-                ]
+                rec["geometry"] = [(np.float64(x), np.float64(y)) for x, y in e["geometry"]]
             else:
                 nu = self._nodes[e["u"]]
                 nv = self._nodes[e["v"]]
@@ -117,8 +115,7 @@ class RoadNetwork:
             import osmnx as ox  # type: ignore[import-untyped]
         except ImportError as exc:
             raise ImportError(
-                "osmnx is required for from_osmnx(). "
-                "Install it with: pip install osmnx"
+                "osmnx is required for from_osmnx(). Install it with: pip install osmnx"
             ) from exc
 
         if place is not None:
@@ -384,9 +381,7 @@ class RoadNetwork:
             for k in range(len(e["geometry"]) - 1):
                 ax, ay = e["geometry"][k]
                 bx, by = e["geometry"][k + 1]
-                proj_x, proj_y = self._project_point_on_segment(
-                    px, py, ax, ay, bx, by
-                )
+                proj_x, proj_y = self._project_point_on_segment(px, py, ax, ay, bx, by)
                 dsq = (proj_x - px) ** 2 + (proj_y - py) ** 2
                 if dsq < best_dist_sq:
                     best_dist_sq = dsq
@@ -416,9 +411,7 @@ class RoadNetwork:
             If *edge_id* is out of range.
         """
         if edge_id < 0 or edge_id >= len(self._edges):
-            raise IndexError(
-                f"edge_id {edge_id} out of range [0, {len(self._edges)})."
-            )
+            raise IndexError(f"edge_id {edge_id} out of range [0, {len(self._edges)}).")
         return float(self._edges[edge_id]["speed_limit"])
 
     # ------------------------------------------------------------------

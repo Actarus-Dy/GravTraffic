@@ -53,8 +53,7 @@ def gini_coefficient(values: np.ndarray) -> float:
     if n == 0 or np.sum(values) == 0:
         return 0.0
     index = np.arange(1, n + 1)
-    return float((2.0 * np.sum(index * values) - (n + 1) * np.sum(values))
-                 / (n * np.sum(values)))
+    return float((2.0 * np.sum(index * values) - (n + 1) * np.sum(values)) / (n * np.sum(values)))
 
 
 def run_emergence_analysis(
@@ -79,9 +78,14 @@ def run_emergence_analysis(
     results = {}
     for label, g_s in [("gravity_on", G_s), ("gravity_off", 0.0)]:
         sim = GravSimulation(
-            G_s=g_s, beta=beta, softening=10.0,
-            dt=0.1, v_max=36.0, adaptive_dt=False,
-            drag_coefficient=gamma, use_gpu=False,
+            G_s=g_s,
+            beta=beta,
+            softening=10.0,
+            dt=0.1,
+            v_max=36.0,
+            adaptive_dt=False,
+            drag_coefficient=gamma,
+            use_gpu=False,
         )
         sim.init_vehicles(pos.copy(), vel.copy(), dens.copy())
 
@@ -109,8 +113,9 @@ def run_emergence_analysis(
         init_x = pos[:, 0]
         slow_x = init_x[slow_idx]
         upstream_mask = (init_x < slow_x - 50) & (init_x > slow_x - 500)
-        upstream_decel = float(np.mean(init_speeds[upstream_mask])
-                               - np.mean(final_speeds[upstream_mask]))
+        upstream_decel = float(
+            np.mean(init_speeds[upstream_mask]) - np.mean(final_speeds[upstream_mask])
+        )
 
         # Speed variance amplification
         init_std = float(np.std(init_speeds))
@@ -153,15 +158,12 @@ def run_emergence_analysis(
     #   - gini_delta: extra clustering (Gini of spacings), capped at 0.1
     g_on = results["gravity_on"]
     g_off = results["gravity_off"]
-    decel_delta = max(0, g_on["upstream_deceleration_ms"]
-                       - g_off["upstream_deceleration_ms"])
+    decel_delta = max(0, g_on["upstream_deceleration_ms"] - g_off["upstream_deceleration_ms"])
     variance_delta = max(0, g_on["variance_ratio"] - g_off["variance_ratio"])
     gini_delta = max(0, g_on["gini_increase"] - g_off["gini_increase"])
 
     emergence_score = (
-        min(decel_delta / 5.0, 1.0)
-        + min(variance_delta / 2.0, 1.0)
-        + min(gini_delta / 0.1, 1.0)
+        min(decel_delta / 5.0, 1.0) + min(variance_delta / 2.0, 1.0) + min(gini_delta / 0.1, 1.0)
     ) / 3.0  # average of 3 normalized components -> [0, 1]
 
     return {

@@ -11,10 +11,10 @@ import pytest
 
 from gravtraffic.network.road_network import RoadNetwork
 
-
 # ======================================================================
 # Fixtures
 # ======================================================================
+
 
 @pytest.fixture
 def grid_3x3() -> RoadNetwork:
@@ -37,6 +37,7 @@ def grid_1x1() -> RoadNetwork:
 # ======================================================================
 # Test 1: from_grid(3, 3) creates 9 nodes and correct number of edges
 # ======================================================================
+
 
 class TestFromGridTopology:
     """Verify that from_grid produces the correct graph topology."""
@@ -64,14 +65,14 @@ class TestFromGridTopology:
                 net = RoadNetwork.from_grid(rows=rows, cols=cols, block_size=100.0)
                 expected = rows * (cols - 1) + (rows - 1) * cols
                 assert net.edge_count == expected, (
-                    f"Failed for {rows}x{cols}: "
-                    f"got {net.edge_count}, expected {expected}"
+                    f"Failed for {rows}x{cols}: got {net.edge_count}, expected {expected}"
                 )
 
 
 # ======================================================================
 # Test 2: intersections returns correct node count with coordinates
 # ======================================================================
+
 
 class TestIntersections:
     """Validate the intersections property."""
@@ -119,6 +120,7 @@ class TestIntersections:
 # Test 3: segments returns edges with valid lengths
 # ======================================================================
 
+
 class TestSegments:
     """Validate the segments property."""
 
@@ -148,6 +150,7 @@ class TestSegments:
 # ======================================================================
 # Test 4: sample_positions returns (n, 2) array within network bounds
 # ======================================================================
+
 
 class TestSamplePositions:
     """Validate random position sampling on the network."""
@@ -185,6 +188,7 @@ class TestSamplePositions:
 # ======================================================================
 # Test 5: nearest_edge returns valid edge_id and projected point
 # ======================================================================
+
 
 class TestNearestEdge:
     """Validate nearest-edge queries."""
@@ -225,6 +229,7 @@ class TestNearestEdge:
 # Test 6: get_speed_limit returns 13.9 m/s for grid networks
 # ======================================================================
 
+
 class TestGetSpeedLimit:
     """Validate speed limit queries."""
 
@@ -248,6 +253,7 @@ class TestGetSpeedLimit:
 # ======================================================================
 # Test 7: from_grid(1, 1) single node edge case
 # ======================================================================
+
 
 class TestSingleNodeGrid:
     """Edge case: a 1x1 grid has one node and zero edges."""
@@ -276,6 +282,7 @@ class TestSingleNodeGrid:
 # ======================================================================
 # Test 8 (bonus): manual dict construction
 # ======================================================================
+
 
 class TestManualConstruction:
     """Verify that constructing from raw dicts works correctly."""

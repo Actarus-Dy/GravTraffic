@@ -35,7 +35,7 @@ Date: 2026-03-22
 
 from __future__ import annotations
 
-from typing import Callable, Union
+from collections.abc import Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -47,7 +47,7 @@ def leapfrog_step(
     forces: npt.NDArray[np.float64],
     dt: float,
     force_fn: Callable[..., npt.NDArray[np.float64]],
-    v_max: Union[npt.NDArray[np.float64], float] = 36.0,
+    v_max: npt.NDArray[np.float64] | float = 36.0,
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Perform one leapfrog kick-drift-kick integration step.
 
@@ -120,7 +120,7 @@ def leapfrog_step(
 
 def _clip_speed(
     velocities: npt.NDArray[np.float64],
-    v_max: Union[npt.NDArray[np.float64], float],
+    v_max: npt.NDArray[np.float64] | float,
 ) -> npt.NDArray[np.float64]:
     """Clip velocity vectors so their magnitude does not exceed ``v_max``.
 

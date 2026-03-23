@@ -122,9 +122,9 @@ def estimate_phi_integral(
     if not mask.any():
         return 0.0
 
-    pos = vehicle_positions[mask].copy()   # (K, 2)
+    pos = vehicle_positions[mask].copy()  # (K, 2)
     vel = vehicle_velocities[mask].copy()  # (K, 2)
-    masses = vehicle_masses[mask].copy()   # (K,)
+    masses = vehicle_masses[mask].copy()  # (K,)
 
     # Amber / clearance duration is fixed at 10 s
     amber_s = 10.0
@@ -160,35 +160,38 @@ def estimate_phi_integral(
         if t_in_cycle < green_ns:
             # NS green -> EW red
             phase = "ns_green"
-            obstacles_pos = np.array([
-                intersection_pos + np.array([15.0, 0.0]),
-                intersection_pos - np.array([15.0, 0.0]),
-            ], dtype=np.float64)
-            obstacles_mass = np.array(
-                [red_light_mass, red_light_mass], dtype=np.float64
+            obstacles_pos = np.array(
+                [
+                    intersection_pos + np.array([15.0, 0.0]),
+                    intersection_pos - np.array([15.0, 0.0]),
+                ],
+                dtype=np.float64,
             )
+            obstacles_mass = np.array([red_light_mass, red_light_mass], dtype=np.float64)
         elif t_in_cycle < green_ns + amber_s:
             # Amber: all blocked
             phase = "amber"
-            obstacles_pos = np.array([
-                intersection_pos + np.array([15.0, 0.0]),
-                intersection_pos - np.array([15.0, 0.0]),
-                intersection_pos + np.array([0.0, 15.0]),
-                intersection_pos - np.array([0.0, 15.0]),
-            ], dtype=np.float64)
-            obstacles_mass = np.array(
-                [red_light_mass] * 4, dtype=np.float64
+            obstacles_pos = np.array(
+                [
+                    intersection_pos + np.array([15.0, 0.0]),
+                    intersection_pos - np.array([15.0, 0.0]),
+                    intersection_pos + np.array([0.0, 15.0]),
+                    intersection_pos - np.array([0.0, 15.0]),
+                ],
+                dtype=np.float64,
             )
+            obstacles_mass = np.array([red_light_mass] * 4, dtype=np.float64)
         else:
             # EW green -> NS red
             phase = "ew_green"
-            obstacles_pos = np.array([
-                intersection_pos + np.array([0.0, 15.0]),
-                intersection_pos - np.array([0.0, 15.0]),
-            ], dtype=np.float64)
-            obstacles_mass = np.array(
-                [red_light_mass, red_light_mass], dtype=np.float64
+            obstacles_pos = np.array(
+                [
+                    intersection_pos + np.array([0.0, 15.0]),
+                    intersection_pos - np.array([0.0, 15.0]),
+                ],
+                dtype=np.float64,
             )
+            obstacles_mass = np.array([red_light_mass, red_light_mass], dtype=np.float64)
 
         # Clamp vehicle positions at stop lines when their direction is red.
         # This models the fact that vehicles queue at a red light rather than

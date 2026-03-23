@@ -17,11 +17,10 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any
-
 import os
 import pathlib
 import time
+from typing import Any
 
 import numpy as np
 from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
@@ -30,11 +29,10 @@ from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-_STATIC_DIR = pathlib.Path(__file__).parent / "static"
-
 from gravtraffic.agents.traffic_model import TrafficModel
 from gravtraffic.network.road_network import RoadNetwork
 
+_STATIC_DIR = pathlib.Path(__file__).parent / "static"
 
 # ======================================================================
 # Pydantic request / response models
@@ -48,7 +46,7 @@ class SimulationConfig(BaseModel):
     grid_cols: int = Field(default=5, ge=1, le=50, description="Grid intersection columns")
     block_size: float = Field(default=200.0, gt=0, description="Block size in metres")
     n_vehicles: int = Field(default=100, ge=1, le=100_000, description="Number of vehicles")
-    G_s: float = Field(default=5.0, gt=0, description="Social gravitational constant (unified calibration)")
+    G_s: float = Field(default=5.0, gt=0, description="Social gravitational constant")
     beta: float = Field(default=0.5, ge=0, description="Mass-assignment exponent")
     dt: float = Field(default=0.1, gt=0, le=1.0, description="Integration timestep (seconds)")
     seed: int = Field(default=42, description="Random seed for reproducibility")
@@ -185,8 +183,7 @@ class _RateLimiter:
         """Remove keys with no recent requests (call periodically)."""
         now = time.monotonic()
         cutoff = now - self.window_s
-        dead = [k for k, v in self._requests.items()
-                if not any(t > cutoff for t in v)]
+        dead = [k for k, v in self._requests.items() if not any(t > cutoff for t in v)]
         for k in dead:
             del self._requests[k]
 
@@ -409,14 +406,16 @@ async def predict_simulation(
     vehicles = []
     for i in range(len(masses)):
         speed = float(np.linalg.norm(velocities[i]))
-        vehicles.append({
-            "x": float(positions[i, 0]),
-            "y": float(positions[i, 1]),
-            "vx": float(velocities[i, 0]),
-            "vy": float(velocities[i, 1]),
-            "mass": float(masses[i]),
-            "speed_kmh": speed * 3.6,
-        })
+        vehicles.append(
+            {
+                "x": float(positions[i, 0]),
+                "y": float(positions[i, 1]),
+                "vx": float(velocities[i, 0]),
+                "vy": float(velocities[i, 1]),
+                "mass": float(masses[i]),
+                "speed_kmh": speed * 3.6,
+            }
+        )
 
     return {
         "horizon_s": prediction["horizon_s"],
@@ -484,20 +483,17 @@ async def stream_potential(websocket: WebSocket) -> None:
                     try:
                         async with state.lock:
                             cfg_data = msg.get("config", msg)
-                            new_cfg = SimulationConfig(**{
-                                k: v for k, v in cfg_data.items()
-                                if k != "type"
-                            })
+                            new_cfg = SimulationConfig(
+                                **{k: v for k, v in cfg_data.items() if k != "type"}
+                            )
                             state.model = _build_model(new_cfg)
                             state.config = new_cfg
                         await websocket.send_json(
                             {"type": "config_ok", "n_vehicles": new_cfg.n_vehicles}
                         )
                     except Exception as exc:
-                        await websocket.send_json(
-                            {"type": "error", "detail": str(exc)}
-                        )
-            except asyncio.TimeoutError:
+                        await websocket.send_json({"type": "error", "detail": str(exc)})
+            except TimeoutError:
                 pass
 
             # --- Produce a frame if running ---
@@ -525,8 +521,7 @@ async def stream_potential(websocket: WebSocket) -> None:
                             np.mean([v["speed_kmh"] for v in vehicles]) if vehicles else 0.0
                         ),
                         "congestion_index": float(
-                            sum(1 for v in vehicles if v["type"] == "slow")
-                            / max(len(vehicles), 1)
+                            sum(1 for v in vehicles if v["type"] == "slow") / max(len(vehicles), 1)
                         ),
                         "n_vehicles": len(vehicles),
                     },

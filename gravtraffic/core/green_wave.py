@@ -95,13 +95,10 @@ class GreenWaveCoordinator:
             Phase offsets in seconds.  The intersection closest to the
             corridor origin has offset 0.
         """
-        intersection_positions = np.asarray(
-            intersection_positions, dtype=np.float64
-        )
+        intersection_positions = np.asarray(intersection_positions, dtype=np.float64)
         if intersection_positions.ndim != 2 or intersection_positions.shape[1] != 2:
             raise ValueError(
-                "intersection_positions must have shape (K, 2), "
-                f"got {intersection_positions.shape}"
+                f"intersection_positions must have shape (K, 2), got {intersection_positions.shape}"
             )
 
         if corridor_direction is None:
@@ -116,14 +113,10 @@ class GreenWaveCoordinator:
         corridor_direction = corridor_direction / norm
 
         # Project positions onto corridor axis
-        projections: npt.NDArray[np.float64] = (
-            intersection_positions @ corridor_direction
-        )
+        projections: npt.NDArray[np.float64] = intersection_positions @ corridor_direction
 
         # Offset relative to the first (minimum-projection) intersection
-        offsets: npt.NDArray[np.float64] = (
-            (projections - projections.min()) / self.wave_speed
-        )
+        offsets: npt.NDArray[np.float64] = (projections - projections.min()) / self.wave_speed
 
         return offsets
 
@@ -158,8 +151,7 @@ class GreenWaveCoordinator:
         offsets = np.asarray(offsets, dtype=np.float64)
         if len(intersections) != len(offsets):
             raise ValueError(
-                f"Length mismatch: {len(intersections)} intersections vs "
-                f"{len(offsets)} offsets"
+                f"Length mismatch: {len(intersections)} intersections vs {len(offsets)} offsets"
             )
 
         for agent, offset in zip(intersections, offsets):
@@ -221,9 +213,7 @@ class GreenWaveCoordinator:
         float
             Optimal wave speed in m/s.
         """
-        intersection_positions = np.asarray(
-            intersection_positions, dtype=np.float64
-        )
+        intersection_positions = np.asarray(intersection_positions, dtype=np.float64)
 
         if corridor_direction is None:
             corridor_dir = np.array([1.0, 0.0], dtype=np.float64)
@@ -243,9 +233,7 @@ class GreenWaveCoordinator:
         best_speed = self.wave_speed
         best_bandwidth = -1.0
 
-        for v in np.linspace(
-            speed_range[0], speed_range[1], n_candidates, dtype=np.float64
-        ):
+        for v in np.linspace(speed_range[0], speed_range[1], n_candidates, dtype=np.float64):
             offsets = distances / v
             fractional_offsets = offsets % cycle
             spread = float(np.max(fractional_offsets) - np.min(fractional_offsets))

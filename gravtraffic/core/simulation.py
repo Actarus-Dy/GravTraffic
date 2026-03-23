@@ -20,8 +20,6 @@ Date: 2026-03-22
 
 from __future__ import annotations
 
-from typing import Callable
-
 import numpy as np
 import numpy.typing as npt
 
@@ -29,8 +27,8 @@ from gravtraffic.core.force_engine import ForceEngine
 from gravtraffic.core.force_engine_gpu import GPU_AVAILABLE, ForceEngineGPU
 from gravtraffic.core.force_engine_numba import (
     NUMBA_AVAILABLE,
-    ForceEngineNumba,
     ForceEngineBHNumba,
+    ForceEngineNumba,
 )
 from gravtraffic.core.integrator import adaptive_dt, leapfrog_step
 from gravtraffic.core.mass_assigner import MassAssigner
@@ -150,12 +148,8 @@ class GravSimulation:
 
         # Static obstacles (e.g. red-light masses) -- participate in force
         # computation but are NOT integrated.
-        self._obstacle_positions: npt.NDArray[np.float64] = np.empty(
-            (0, 2), dtype=np.float64
-        )
-        self._obstacle_masses: npt.NDArray[np.float64] = np.empty(
-            0, dtype=np.float64
-        )
+        self._obstacle_positions: npt.NDArray[np.float64] = np.empty((0, 2), dtype=np.float64)
+        self._obstacle_masses: npt.NDArray[np.float64] = np.empty(0, dtype=np.float64)
 
         # Bookkeeping
         self.step_count: int = 0
@@ -209,7 +203,7 @@ class GravSimulation:
     # ------------------------------------------------------------------
     # State cloning (for prediction without mutating the live sim)
     # ------------------------------------------------------------------
-    def clone(self) -> "GravSimulation":
+    def clone(self) -> GravSimulation:
         """Create an independent deep copy of this simulation.
 
         The clone shares no mutable state with the original -- modifying
@@ -416,9 +410,7 @@ class GravSimulation:
         ValueError
             If *positions* and *masses* have incompatible shapes.
         """
-        self._obstacle_positions = np.asarray(
-            positions, dtype=np.float64
-        ).reshape(-1, 2)
+        self._obstacle_positions = np.asarray(positions, dtype=np.float64).reshape(-1, 2)
         self._obstacle_masses = np.asarray(masses, dtype=np.float64).ravel()
 
         k = len(self._obstacle_masses)
@@ -516,9 +508,7 @@ class GravSimulation:
     # ------------------------------------------------------------------
     # Potential field
     # ------------------------------------------------------------------
-    def get_potential_field(
-        self, grid_centers: np.ndarray
-    ) -> npt.NDArray[np.float64]:
+    def get_potential_field(self, grid_centers: np.ndarray) -> npt.NDArray[np.float64]:
         """Compute the gravitational potential field at the current state.
 
         Parameters
@@ -531,9 +521,7 @@ class GravSimulation:
         ndarray, shape (M,), dtype float64
             Scalar potential at each grid point.
         """
-        return compute_potential_field(
-            self.positions, self.masses, grid_centers, G_s=self.G_s
-        )
+        return compute_potential_field(self.positions, self.masses, grid_centers, G_s=self.G_s)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -624,9 +612,7 @@ class GravSimulation:
         # Recompute masses at the (possibly drifted) positions.
         # We use the current mean speed -- it does not change within a step.
         speeds = np.linalg.norm(velocities, axis=1)
-        masses = self._mass_assigner.assign(
-            speeds, self._mean_speed, self.local_densities
-        )
+        masses = self._mass_assigner.assign(speeds, self._mean_speed, self.local_densities)
 
         n_vehicles = len(masses)
 
@@ -643,12 +629,9 @@ class GravSimulation:
         # Force computation — auto-select engine by N:
         # Numba naive for N < 2000, Numba BH for N >= 2000 (if available)
         engine = self._force_engine
-        if (hasattr(self, '_force_engine_bh')
-                and len(all_masses) >= 2000):
+        if hasattr(self, "_force_engine_bh") and len(all_masses) >= 2000:
             engine = self._force_engine_bh
-        all_forces = engine.compute_all(
-            all_positions, all_masses, theta=self.theta
-        )
+        all_forces = engine.compute_all(all_positions, all_masses, theta=self.theta)
 
         # Keep only the vehicle forces; discard forces on obstacles.
         forces = all_forces[:n_vehicles]
@@ -656,7 +639,7 @@ class GravSimulation:
         # Convert force -> acceleration: a = F / |m|, with floor to avoid
         # division by zero for near-zero mass particles.
         abs_masses = np.maximum(np.abs(masses), _MASS_FLOOR)  # (N,)
-        accelerations = forces / abs_masses[:, np.newaxis]    # (N, 2)
+        accelerations = forces / abs_masses[:, np.newaxis]  # (N, 2)
 
         # --- Drag enrichment (Greenshields equilibrium speed model) ---
         # Physically motivated: engine thrust vs aerodynamic drag.
@@ -664,7 +647,7 @@ class GravSimulation:
         # When |v_i| > v_eq: deceleration.  When |v_i| < v_eq: acceleration.
         if self._drag_coefficient > 0:
             speed = np.linalg.norm(velocities, axis=1, keepdims=True)  # (N, 1)
-            speed_scalar = speed.ravel()                                # (N,)
+            speed_scalar = speed.ravel()  # (N,)
 
             # Greenshields equilibrium speed from local density
             v_eq = self._v_free * np.maximum(
@@ -682,6 +665,6 @@ class GravSimulation:
 
             # Drag acceleration: scalar (v_eq - |v|) applied along direction
             drag_scalar = self._drag_coefficient * (v_eq - speed_scalar)  # (N,)
-            accelerations += drag_scalar[:, np.newaxis] * direction       # (N, 2)
+            accelerations += drag_scalar[:, np.newaxis] * direction  # (N, 2)
 
         return accelerations

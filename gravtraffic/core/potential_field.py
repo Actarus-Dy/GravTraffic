@@ -98,9 +98,7 @@ def compute_potential_field(
             f"with {n} masses; expected ({n}, 2)"
         )
     if grid_centers.ndim != 2 or grid_centers.shape[1] != 2:
-        raise ValueError(
-            f"grid_centers must have shape (M, 2), got {grid_centers.shape}"
-        )
+        raise ValueError(f"grid_centers must have shape (M, 2), got {grid_centers.shape}")
 
     # Broadcasting: (M, 1, 2) - (1, N, 2) -> (M, N, 2)
     diff = grid_centers[:, np.newaxis, :] - vehicle_positions[np.newaxis, :, :]  # (M, N, 2)
@@ -113,8 +111,8 @@ def compute_potential_field(
 
     # Potential contributions: -sign(m_i) * G_s * |m_i| / r
     # Vectorized over both grid points (M) and vehicles (N)
-    signs = np.sign(vehicle_masses)         # (N,)
-    abs_masses = np.abs(vehicle_masses)      # (N,)
+    signs = np.sign(vehicle_masses)  # (N,)
+    abs_masses = np.abs(vehicle_masses)  # (N,)
 
     # (M, N) = -(1, N) * G_s * (1, N) / (M, N)
     contributions = -signs[np.newaxis, :] * G_s * abs_masses[np.newaxis, :] / dist
@@ -228,7 +226,7 @@ def optimize_traffic_light(
     # Select vehicles within radius
     if len(vehicle_masses) > 0:
         diff = vehicle_positions - intersection_pos[np.newaxis, :]  # (N, 2)
-        dists = np.sqrt(np.sum(diff * diff, axis=1))               # (N,)
+        dists = np.sqrt(np.sum(diff * diff, axis=1))  # (N,)
         mask = dists <= radius
         nearby_pos = vehicle_positions[mask]
         nearby_mass = vehicle_masses[mask]
@@ -239,7 +237,7 @@ def optimize_traffic_light(
     # Compute potential at intersection center
     eval_point = intersection_pos.reshape(1, 2)  # (1, 2) for compute_potential_field
     phi = compute_potential_field(nearby_pos, nearby_mass, eval_point, G_s=G_s)
-    phi_val = phi[0]  # scalar
+    phi[0]  # scalar
 
     # Separate NS and EW contributions using directional decomposition
     # NS vehicles: |dy| > |dx| relative to intersection

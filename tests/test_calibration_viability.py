@@ -16,16 +16,15 @@ Agent #23 Scientific Validation Tester
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from gravtraffic.core.calibration import (
-    run_calibration_test,
-    calibration_viability_report,
-    _greenshields_speed,
+    RHO_JAM,
+    V_FREE_MS,
     _compute_r_squared,
     _compute_rmse,
-    V_FREE_MS,
-    RHO_JAM,
+    _greenshields_speed,
+    calibration_viability_report,
+    run_calibration_test,
 )
 
 # ======================================================================
@@ -96,7 +95,7 @@ class TestRSquared:
         y_true = np.array([1.0, 2.0, 3.0], dtype=np.float64)
         y_pred = np.array([1.1, 2.1, 2.9], dtype=np.float64)
         ss_res = 0.01 + 0.01 + 0.01  # 0.03
-        ss_tot = 1.0 + 0.0 + 1.0     # 2.0
+        ss_tot = 1.0 + 0.0 + 1.0  # 2.0
         expected = 1.0 - ss_res / ss_tot  # 0.985
         r2 = _compute_r_squared(y_true, y_pred)
         assert np.isclose(r2, expected, rtol=1e-10)
@@ -224,13 +223,11 @@ class TestCalibrationViabilityReport:
 
     def test_each_result_has_required_keys(self) -> None:
         """Each result dict has all required keys plus 'name'."""
-        required = {"name", "G_s", "beta", "r_squared", "rmse_ms",
-                     "final_speeds", "densities"}
+        required = {"name", "G_s", "beta", "r_squared", "rmse_ms", "final_speeds", "densities"}
         results = calibration_viability_report()
         for r in results:
             assert required <= set(r.keys()), (
-                f"Config {r.get('name', '?')} missing keys: "
-                f"{required - set(r.keys())}"
+                f"Config {r.get('name', '?')} missing keys: {required - set(r.keys())}"
             )
 
 
@@ -250,8 +247,7 @@ class TestModelSanity:
         # Test 5: Print R^2 values for human inspection
         print("\n--- R^2 values for human inspection ---")
         for r in results:
-            print(f"  {r['name']:<12}: R^2 = {r['r_squared']:.6f}, "
-                  f"RMSE = {r['rmse_ms']:.4f} m/s")
+            print(f"  {r['name']:<12}: R^2 = {r['r_squared']:.6f}, RMSE = {r['rmse_ms']:.4f} m/s")
         print("---------------------------------------")
 
         assert any(r2 > 0.0 for r2 in r2_values), (

@@ -30,10 +30,10 @@ import mesa
 import numpy as np
 import numpy.typing as npt
 
-from gravtraffic.core.simulation import GravSimulation
-from gravtraffic.core.potential_field import compute_potential_field, make_grid
-from gravtraffic.agents.vehicle_agent import VehicleAgent
 from gravtraffic.agents.intersection_agent import IntersectionAgent
+from gravtraffic.agents.vehicle_agent import VehicleAgent
+from gravtraffic.core.potential_field import compute_potential_field, make_grid
+from gravtraffic.core.simulation import GravSimulation
 from gravtraffic.network.road_network import RoadNetwork
 
 __all__ = ["TrafficModel"]
@@ -131,10 +131,12 @@ class TrafficModel(mesa.Model):
         # (uniformly distributed on the circle, scaled by speed magnitude)
         speeds = rng.uniform(10.0, 30.0, n_vehicles)  # m/s
         angles = rng.uniform(0.0, 2.0 * np.pi, n_vehicles)
-        velocities = np.column_stack([
-            speeds * np.cos(angles),
-            speeds * np.sin(angles),
-        ])
+        velocities = np.column_stack(
+            [
+                speeds * np.cos(angles),
+                speeds * np.sin(angles),
+            ]
+        )
 
         # Local densities: uniform initial estimate
         densities = np.full(n_vehicles, 30.0, dtype=np.float64)
@@ -161,9 +163,7 @@ class TrafficModel(mesa.Model):
                 if node_info["degree"] >= 3:
                     agent = IntersectionAgent(
                         self,
-                        position=np.array(
-                            [node_info["x"], node_info["y"]], dtype=np.float64
-                        ),
+                        position=np.array([node_info["x"], node_info["y"]], dtype=np.float64),
                         node_id=node_info["node_id"],
                     )
                     self.intersection_agents.append(agent)
@@ -367,12 +367,8 @@ class TrafficModel(mesa.Model):
             ``'grid_width'``, ``'grid_height'``,
             ``'x_min'``, ``'y_min'``, ``'x_max'``, ``'y_max'``.
         """
-        positions = np.array(
-            [a.position for a in self.vehicle_agents], dtype=np.float64
-        )
-        masses = np.array(
-            [a.mass for a in self.vehicle_agents], dtype=np.float64
-        )
+        positions = np.array([a.position for a in self.vehicle_agents], dtype=np.float64)
+        masses = np.array([a.mass for a in self.vehicle_agents], dtype=np.float64)
 
         # Compute bounds with padding
         margin = 50.0

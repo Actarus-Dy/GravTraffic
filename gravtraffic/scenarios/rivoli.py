@@ -24,18 +24,15 @@ Date: 2026-03-22
 from __future__ import annotations
 
 import numpy as np
-import numpy.typing as npt
 
-from gravtraffic.core.simulation import GravSimulation
-from gravtraffic.core.signal_optimizer import optimize_signal_timing
 from gravtraffic.core.green_wave import GreenWaveCoordinator
 from gravtraffic.core.metrics import (
-    compute_throughput,
     compute_mean_speed,
     compute_stops,
-    compute_congestion_index,
-    compute_snapshot_kpis,
+    compute_throughput,
 )
+from gravtraffic.core.signal_optimizer import optimize_signal_timing
+from gravtraffic.core.simulation import GravSimulation
 
 __all__ = ["RivoliCorridor"]
 
@@ -97,7 +94,7 @@ class RivoliCorridor:
             v_max=v_max,
             adaptive_dt=False,
             drag_coefficient=drag_coefficient,
-            v_free=v_max,       # free-flow = speed limit for urban corridor
+            v_free=v_max,  # free-flow = speed limit for urban corridor
             rho_jam=150.0,
         )
 
@@ -121,9 +118,7 @@ class RivoliCorridor:
         dict
             KPI dictionary with mode, speeds, stops, vehicle counts.
         """
-        return self._run(
-            duration_s, mode="fixed", green_ns=green_ns, green_ew=green_ew
-        )
+        return self._run(duration_s, mode="fixed", green_ns=green_ns, green_ew=green_ew)
 
     def run_optimized(
         self,
@@ -173,9 +168,7 @@ class RivoliCorridor:
             * 100
         )
         stops_reduction_pct = (
-            (fixed["mean_stops"] - optimized["mean_stops"])
-            / max(fixed["mean_stops"], 0.1)
-            * 100
+            (fixed["mean_stops"] - optimized["mean_stops"]) / max(fixed["mean_stops"], 0.1) * 100
         )
         throughput_gain_pct = (
             (optimized["total_throughput"] - fixed["total_throughput"])
@@ -221,10 +214,12 @@ class RivoliCorridor:
 
         positions = np.column_stack([x_positions, y_positions])
         speeds = rng.uniform(8.0, self.v_max, n_initial)
-        velocities = np.column_stack([
-            directions * speeds,
-            np.zeros(n_initial),
-        ])
+        velocities = np.column_stack(
+            [
+                directions * speeds,
+                np.zeros(n_initial),
+            ]
+        )
         densities = np.full(n_initial, 50.0, dtype=np.float64)
 
         # --- Create simulation ---
@@ -247,10 +242,12 @@ class RivoliCorridor:
             # Apply green wave: compute phase offsets so eastbound platoon
             # sees continuous green (phase 1 = EW green)
             gw = GreenWaveCoordinator(wave_speed=self.v_max)
-            int_positions_2d = np.column_stack([
-                self.intersection_x,
-                np.zeros(self.n_intersections),
-            ])
+            int_positions_2d = np.column_stack(
+                [
+                    self.intersection_x,
+                    np.zeros(self.n_intersections),
+                ]
+            )
             offsets = gw.compute_offsets(int_positions_2d)
 
             # Shift timers by offset so that EW green phases are staggered
@@ -278,18 +275,12 @@ class RivoliCorridor:
             # --- Inject vehicles at corridor ends ---
             if rng.random() < self.injection_rate * dt:
                 new_pos = np.array([[0.0, 2.0]], dtype=np.float64)
-                new_vel = np.array(
-                    [[rng.uniform(8.0, self.v_max), 0.0]], dtype=np.float64
-                )
+                new_vel = np.array([[rng.uniform(8.0, self.v_max), 0.0]], dtype=np.float64)
                 sim.add_vehicles(new_pos, new_vel, np.array([50.0]))
 
             if rng.random() < self.injection_rate * dt:
-                new_pos = np.array(
-                    [[self.corridor_length, -2.0]], dtype=np.float64
-                )
-                new_vel = np.array(
-                    [[-rng.uniform(8.0, self.v_max), 0.0]], dtype=np.float64
-                )
+                new_pos = np.array([[self.corridor_length, -2.0]], dtype=np.float64)
+                new_vel = np.array([[-rng.uniform(8.0, self.v_max), 0.0]], dtype=np.float64)
                 sim.add_vehicles(new_pos, new_vel, np.array([50.0]))
 
             # --- Update signal phases and build obstacle list ---
@@ -329,12 +320,7 @@ class RivoliCorridor:
 
             # --- Periodic signal optimization (optimized mode only) ---
             opt_interval = kwargs.get("optimize_interval", 300)
-            if (
-                mode == "optimized"
-                and step > 0
-                and step % opt_interval == 0
-                and sim.n_vehicles > 0
-            ):
+            if mode == "optimized" and step > 0 and step % opt_interval == 0 and sim.n_vehicles > 0:
                 for i in range(self.n_intersections):
                     ix = float(self.intersection_x[i])
                     int_pos = np.array([ix, 0.0], dtype=np.float64)
@@ -360,9 +346,7 @@ class RivoliCorridor:
 
             # --- Throughput: count gate crossings ---
             if sim.n_vehicles > 0 and prev_positions.shape[0] == sim.n_vehicles:
-                tp = compute_throughput(
-                    sim.positions, prev_positions, gate_x, dt
-                )
+                tp = compute_throughput(sim.positions, prev_positions, gate_x, dt)
                 throughput_count += tp * dt / 3600.0  # convert back to count
 
             # --- Remove vehicles that left the corridor ---

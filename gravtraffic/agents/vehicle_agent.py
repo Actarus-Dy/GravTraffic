@@ -20,8 +20,8 @@ Janus Civil C-01 GravTraffic Technical Plan, Section 5.1.
 
 from __future__ import annotations
 
-import numpy as np
 import mesa
+import numpy as np
 
 __all__ = ["VehicleAgent"]
 

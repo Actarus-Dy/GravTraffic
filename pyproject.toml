@@ -49,3 +49,8 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP"]
+ignore = [
+    "N803",  # G_s, G, KE, PE are physics symbols, not snake_case variables
+    "N806",  # Same for local variables (G_s_values, etc.)
+    "N802",  # test_invalid_G_s_negative is a valid test name
+]

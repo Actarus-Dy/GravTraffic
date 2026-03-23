@@ -10,13 +10,10 @@ Date: 2026-03-22
 
 from __future__ import annotations
 
-import json
-
 import pytest
 from fastapi.testclient import TestClient
 
 from gravtraffic.api.app import app, state
-
 
 # ======================================================================
 # Fixtures
@@ -277,6 +274,7 @@ class TestWebSocketStream:
 
             # Wait for the server to process the stop (next loop iteration)
             import time
+
             time.sleep(1.5)
 
             # Record the step count from the REST endpoint.
@@ -292,8 +290,7 @@ class TestWebSocketStream:
             # Check the step counter advanced by exactly 1
             step_after = client.get("/api/v1/status").json()["step"]
             assert step_after == step_before + 1, (
-                f"Expected step to advance by 1 (from {step_before}), "
-                f"got {step_after}"
+                f"Expected step to advance by 1 (from {step_before}), got {step_after}"
             )
 
 
@@ -413,9 +410,15 @@ class TestHealthEndpoints:
         schema = resp.json()
         paths = set(schema["paths"].keys())
         expected = {
-            "/health", "/ready", "/metrics",
-            "/api/v1/status", "/api/v1/simulate", "/api/v1/step",
-            "/api/v1/network/state", "/api/v1/potential", "/api/v1/predict",
+            "/health",
+            "/ready",
+            "/metrics",
+            "/api/v1/status",
+            "/api/v1/simulate",
+            "/api/v1/step",
+            "/api/v1/network/state",
+            "/api/v1/potential",
+            "/api/v1/predict",
         }
         assert expected.issubset(paths), f"Missing: {expected - paths}"
         # Tags should be present
@@ -474,7 +477,7 @@ class TestRateLimiting:
 
     def test_rate_limiter_blocks_excess_traffic(self) -> None:
         """Exceeding the limit should return 429."""
-        from gravtraffic.api.app import _RateLimiter, _check_rate_limit
+        from gravtraffic.api.app import _RateLimiter
 
         limiter = _RateLimiter(max_requests=3, window_s=60.0)
         # Monkey-patch the module-level limiter temporarily
@@ -517,6 +520,7 @@ class TestRateLimiting:
         limiter = _RateLimiter(max_requests=10, window_s=0.001)
         limiter.check("ephemeral_ip")
         import time
+
         time.sleep(0.01)  # let the window expire
         limiter.cleanup()
         assert "ephemeral_ip" not in limiter._requests

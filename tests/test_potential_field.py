@@ -25,10 +25,10 @@ from gravtraffic.core.potential_field import (
     optimize_traffic_light,
 )
 
-
 # ======================================================================
 # Fixtures
 # ======================================================================
+
 
 @pytest.fixture
 def single_positive_mass():
@@ -64,6 +64,7 @@ def rng():
 # Test 1: Positive mass -> negative potential (well)
 # ======================================================================
 
+
 class TestPositiveMassPotential:
     """Phi_i = -sign(m_i) * G_s * |m_i| / r, with m_i > 0 -> Phi < 0."""
 
@@ -88,6 +89,7 @@ class TestPositiveMassPotential:
 # ======================================================================
 # Test 2: Negative mass -> positive potential (hill)
 # ======================================================================
+
 
 class TestNegativeMassPotential:
     """Phi_i = -sign(m_i) * G_s * |m_i| / r, with m_i < 0 -> Phi > 0."""
@@ -114,6 +116,7 @@ class TestNegativeMassPotential:
 # Test 3: 1/r decay -- potential magnitude decreases with distance
 # ======================================================================
 
+
 class TestInverseRDecay:
     """|Phi| must decrease as evaluation point moves further from source."""
 
@@ -133,7 +136,7 @@ class TestInverseRDecay:
         for i in range(len(distances) - 1):
             assert abs_phi[i] > abs_phi[i + 1], (
                 f"|Phi| at r={distances[i]} ({abs_phi[i]:.6e}) should exceed "
-                f"|Phi| at r={distances[i+1]} ({abs_phi[i+1]:.6e})"
+                f"|Phi| at r={distances[i + 1]} ({abs_phi[i + 1]:.6e})"
             )
 
     def test_exact_ratio_1_over_r(self):
@@ -151,6 +154,7 @@ class TestInverseRDecay:
 # ======================================================================
 # Test 4: Symmetry -- equal masses at symmetric positions
 # ======================================================================
+
 
 class TestSymmetry:
     """Two identical masses at (+-d, 0) produce a symmetric potential."""
@@ -186,6 +190,7 @@ class TestSymmetry:
 # ======================================================================
 # Test 5: make_grid dimensions
 # ======================================================================
+
 
 class TestMakeGrid:
     """Grid generation correctness."""
@@ -228,6 +233,7 @@ class TestMakeGrid:
 # ======================================================================
 # Test 6: optimize_traffic_light returns valid timing
 # ======================================================================
+
 
 class TestOptimizeTrafficLight:
     """Traffic light optimizer produces valid output."""
@@ -273,12 +279,15 @@ class TestOptimizeTrafficLight:
     def test_pure_congestion_prefers_balanced_split(self):
         """With symmetric congestion in NS and EW, timing should be near 50/50."""
         # Place vehicles symmetrically in NS and EW corridors
-        pos = np.array([
-            [0.0, 50.0],   # NS
-            [0.0, -50.0],  # NS
-            [50.0, 0.0],   # EW
-            [-50.0, 0.0],  # EW
-        ], dtype=np.float64)
+        pos = np.array(
+            [
+                [0.0, 50.0],  # NS
+                [0.0, -50.0],  # NS
+                [50.0, 0.0],  # EW
+                [-50.0, 0.0],  # EW
+            ],
+            dtype=np.float64,
+        )
         mass = np.array([2.0, 2.0, 2.0, 2.0], dtype=np.float64)  # equal congestion
         intersection = np.array([0.0, 0.0], dtype=np.float64)
 
@@ -293,6 +302,7 @@ class TestOptimizeTrafficLight:
 # ======================================================================
 # Test 7: Empty vehicles -> zero potential
 # ======================================================================
+
 
 class TestEmptyVehicles:
     """No vehicles should produce zero potential everywhere."""
@@ -323,6 +333,7 @@ class TestEmptyVehicles:
 # Test 8: dtype enforcement
 # ======================================================================
 
+
 class TestDtypeEnforcement:
     """All outputs must be float64."""
 
@@ -344,6 +355,7 @@ class TestDtypeEnforcement:
 # Test 9: r_min clamping prevents extreme values
 # ======================================================================
 
+
 class TestRMinClamping:
     """Potential should be bounded when evaluation point coincides with vehicle."""
 
@@ -363,6 +375,7 @@ class TestRMinClamping:
 # ======================================================================
 # Test 10: Superposition -- multi-vehicle potential
 # ======================================================================
+
 
 class TestSuperposition:
     """Total potential equals sum of individual contributions."""

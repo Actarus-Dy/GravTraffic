@@ -18,16 +18,16 @@ Date: 2026-03-22
 
 from __future__ import annotations
 
+import mesa
 import numpy as np
 import pytest
-import mesa
 
 from gravtraffic.agents.intersection_agent import IntersectionAgent
-
 
 # ======================================================================
 # Stub model
 # ======================================================================
+
 
 class StubModel(mesa.Model):
     """Minimal Mesa model for unit-testing agents in isolation."""
@@ -39,6 +39,7 @@ class StubModel(mesa.Model):
 # ======================================================================
 # Fixtures
 # ======================================================================
+
 
 @pytest.fixture
 def model() -> StubModel:
@@ -62,6 +63,7 @@ def agent(model: StubModel) -> IntersectionAgent:
 # ======================================================================
 # 1. Agent creation with correct defaults
 # ======================================================================
+
 
 class TestCreation:
     def test_position_dtype_and_value(self, agent: IntersectionAgent):
@@ -115,6 +117,7 @@ class TestCreation:
 # 2. Phase cycling
 # ======================================================================
 
+
 class TestPhaseCycling:
     def test_phase_advances_after_green_time(self, agent: IntersectionAgent):
         """Step enough times to exhaust phase 0 green (60 s at dt=0.1)."""
@@ -149,6 +152,7 @@ class TestPhaseCycling:
 # 3. is_green reflects current phase
 # ======================================================================
 
+
 class TestIsGreen:
     def test_initial_is_green(self, agent: IntersectionAgent):
         assert agent.is_green == [True, False]
@@ -179,6 +183,7 @@ class TestIsGreen:
 # 4. get_red_light_masses returns masses for non-green phases
 # ======================================================================
 
+
 class TestRedLightMasses:
     def test_initial_returns_masses_for_phase_1(self, agent: IntersectionAgent):
         """Phase 0 is green, so only phase 1 (EW) should produce masses."""
@@ -186,9 +191,7 @@ class TestRedLightMasses:
         # Phase 1 is red -> 2 masses (+ and - offset)
         assert len(masses) == 2
 
-    def test_after_transition_returns_masses_for_phase_0(
-        self, agent: IntersectionAgent
-    ):
+    def test_after_transition_returns_masses_for_phase_0(self, agent: IntersectionAgent):
         dt = 0.1
         steps = int(agent.green_times[0] / dt)
         for _ in range(steps):
@@ -215,13 +218,12 @@ class TestRedLightMasses:
 # 5. Red-light mass is positive (congestion well)
 # ======================================================================
 
+
 class TestRedLightMassPositive:
     def test_all_masses_positive(self, agent: IntersectionAgent):
         masses = agent.get_red_light_masses()
         for _, mass_val in masses:
-            assert mass_val > 0.0, (
-                f"Red-light mass must be positive, got {mass_val}"
-            )
+            assert mass_val > 0.0, f"Red-light mass must be positive, got {mass_val}"
 
     def test_mass_equals_configured_value(self, agent: IntersectionAgent):
         masses = agent.get_red_light_masses()
@@ -233,6 +235,7 @@ class TestRedLightMassPositive:
 # 6. try_optimize updates green_times when interval elapses
 # ======================================================================
 
+
 class TestTryOptimizeUpdates:
     def test_updates_after_interval(self, agent: IntersectionAgent):
         """After enough steps, try_optimize should call the optimizer."""
@@ -243,10 +246,12 @@ class TestTryOptimizeUpdates:
         rng = np.random.default_rng(99)
         n = 50
         # Vehicles aligned along y-axis (NS direction)
-        positions = np.column_stack([
-            np.full(n, agent.position[0], dtype=np.float64),
-            rng.uniform(agent.position[1] - 150, agent.position[1] + 150, n),
-        ]).astype(np.float64)
+        positions = np.column_stack(
+            [
+                np.full(n, agent.position[0], dtype=np.float64),
+                rng.uniform(agent.position[1] - 150, agent.position[1] + 150, n),
+            ]
+        ).astype(np.float64)
         masses = np.full(n, 5.0, dtype=np.float64)  # positive = slow/congested
 
         old_green = list(agent.green_times)
@@ -281,6 +286,7 @@ class TestTryOptimizeUpdates:
 # 7. try_optimize does nothing before interval elapses
 # ======================================================================
 
+
 class TestTryOptimizeNoop:
     def test_noop_before_interval(self, agent: IntersectionAgent):
         """Green times must not change if interval has not elapsed."""
@@ -312,6 +318,7 @@ class TestTryOptimizeNoop:
 # 8. to_dict returns all expected keys
 # ======================================================================
 
+
 class TestToDict:
     EXPECTED_KEYS = {"node_id", "x", "y", "current_phase", "green_times", "is_green"}
 
@@ -341,6 +348,7 @@ class TestToDict:
     def test_values_are_json_serializable(self, agent: IntersectionAgent):
         """All values must be JSON-safe (no numpy scalars)."""
         import json
+
         d = agent.to_dict()
         # Should not raise
         json.dumps(d)

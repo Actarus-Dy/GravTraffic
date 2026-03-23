@@ -12,8 +12,8 @@ Date: 2026-03-23
 
 from __future__ import annotations
 
-from gravtraffic.validation.fundamental_diagram import run_fd_sweep
 from gravtraffic.validation.emergence import run_emergence_analysis
+from gravtraffic.validation.fundamental_diagram import run_fd_sweep
 
 
 def run_sensitivity(
@@ -62,15 +62,21 @@ def run_sensitivity(
                 # Fundamental diagram
                 fd = run_fd_sweep(
                     densities=fd_densities,
-                    G_s=G_s, beta=beta, gamma=gamma,
-                    n_steps=fd_n_steps, warmup_steps=100,
+                    G_s=G_s,
+                    beta=beta,
+                    gamma=gamma,
+                    n_steps=fd_n_steps,
+                    warmup_steps=100,
                     seed=seed,
                 )
 
                 # Emergence
                 em = run_emergence_analysis(
-                    G_s=G_s, beta=beta, gamma=gamma,
-                    n_steps=emergence_n_steps, seed=seed,
+                    G_s=G_s,
+                    beta=beta,
+                    gamma=gamma,
+                    n_steps=emergence_n_steps,
+                    seed=seed,
                 )
 
                 # Combined score: R² (0-1) + normalized emergence

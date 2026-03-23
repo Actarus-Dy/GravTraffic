@@ -15,13 +15,11 @@ import pytest
 from gravtraffic.core.force_engine import ForceEngine
 from gravtraffic.core.force_engine_numba import (
     NUMBA_AVAILABLE,
-    ForceEngineNumba,
     ForceEngineBHNumba,
+    ForceEngineNumba,
 )
 
-requires_numba = pytest.mark.skipif(
-    not NUMBA_AVAILABLE, reason="Numba not installed"
-)
+requires_numba = pytest.mark.skipif(not NUMBA_AVAILABLE, reason="Numba not installed")
 
 
 @pytest.fixture()
@@ -32,6 +30,7 @@ def cpu_engine():
 # ======================================================================
 # ForceEngineNumba (naive JIT)
 # ======================================================================
+
 
 @requires_numba
 class TestForceEngineNumba:
@@ -93,6 +92,7 @@ class TestForceEngineNumba:
 # ForceEngineBHNumba (Barnes-Hut + JIT traversal)
 # ======================================================================
 
+
 @requires_numba
 class TestForceEngineBHNumba:
     def test_empty_input(self) -> None:
@@ -137,6 +137,7 @@ class TestForceEngineBHNumba:
 # ======================================================================
 # Integration with GravSimulation
 # ======================================================================
+
 
 @requires_numba
 class TestSimulationNumbaIntegration:

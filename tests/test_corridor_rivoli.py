@@ -19,10 +19,10 @@ import pytest
 
 from gravtraffic.scenarios.rivoli import RivoliCorridor
 
-
 # ======================================================================
 # Fixtures
 # ======================================================================
+
 
 @pytest.fixture
 def corridor():
@@ -39,6 +39,7 @@ def small_corridor():
 # ======================================================================
 # Test 1: Construction
 # ======================================================================
+
 
 class TestConstruction:
     """RivoliCorridor creates without error and has correct geometry."""
@@ -70,6 +71,7 @@ class TestConstruction:
 # Test 2: Fixed timing run
 # ======================================================================
 
+
 class TestFixedTiming:
     """run_fixed_timing runs for 60 s and returns valid KPIs."""
 
@@ -81,8 +83,14 @@ class TestFixedTiming:
     def test_required_keys_present(self, corridor):
         result = corridor.run_fixed_timing(duration_s=60.0)
         required = {
-            "mode", "duration_s", "mean_speed_ms", "mean_speed_kmh",
-            "mean_stops", "total_throughput", "final_n_vehicles", "total_steps",
+            "mode",
+            "duration_s",
+            "mean_speed_ms",
+            "mean_speed_kmh",
+            "mean_stops",
+            "total_throughput",
+            "final_n_vehicles",
+            "total_steps",
         }
         assert required.issubset(result.keys())
 
@@ -96,6 +104,7 @@ class TestFixedTiming:
 # Test 3: Optimized timing run
 # ======================================================================
 
+
 class TestOptimizedTiming:
     """run_optimized runs for 60 s and returns valid KPIs."""
 
@@ -107,8 +116,14 @@ class TestOptimizedTiming:
     def test_required_keys_present(self, corridor):
         result = corridor.run_optimized(duration_s=60.0)
         required = {
-            "mode", "duration_s", "mean_speed_ms", "mean_speed_kmh",
-            "mean_stops", "total_throughput", "final_n_vehicles", "total_steps",
+            "mode",
+            "duration_s",
+            "mean_speed_ms",
+            "mean_speed_kmh",
+            "mean_stops",
+            "total_throughput",
+            "final_n_vehicles",
+            "total_steps",
         }
         assert required.issubset(result.keys())
 
@@ -116,6 +131,7 @@ class TestOptimizedTiming:
 # ======================================================================
 # Test 4: compare() runs both and returns gain metrics
 # ======================================================================
+
 
 class TestCompare:
     """compare() returns both results and computed gain percentages."""
@@ -146,6 +162,7 @@ class TestCompare:
 # Test 5: Mean speed is positive and bounded
 # ======================================================================
 
+
 class TestSpeedBounds:
     """Mean speed is positive and below v_max * 3.6 km/h."""
 
@@ -175,14 +192,13 @@ class TestSpeedBounds:
 
     def test_speed_consistency_ms_vs_kmh(self, corridor):
         result = corridor.run_fixed_timing(duration_s=60.0)
-        assert result["mean_speed_kmh"] == pytest.approx(
-            result["mean_speed_ms"] * 3.6, rel=1e-10
-        )
+        assert result["mean_speed_kmh"] == pytest.approx(result["mean_speed_ms"] * 3.6, rel=1e-10)
 
 
 # ======================================================================
 # Test 6: Final vehicle count is reasonable
 # ======================================================================
+
 
 class TestVehicleCount:
     """Number of final vehicles is reasonable (not 0, not exploding)."""
@@ -214,6 +230,7 @@ class TestVehicleCount:
 # Test 7: Optimized mode produces different results from fixed
 # ======================================================================
 
+
 class TestModeDifference:
     """The optimized mode must produce DIFFERENT results from fixed.
 
@@ -226,18 +243,10 @@ class TestModeDifference:
         optimized = corridor.run_optimized(duration_s=60.0)
 
         # At least one KPI must differ (they use different signal logic)
-        speeds_differ = abs(
-            fixed["mean_speed_ms"] - optimized["mean_speed_ms"]
-        ) > 1e-6
-        stops_differ = abs(
-            fixed["mean_stops"] - optimized["mean_stops"]
-        ) > 1e-6
-        throughput_differs = abs(
-            fixed["total_throughput"] - optimized["total_throughput"]
-        ) > 1e-6
-        vehicles_differ = (
-            fixed["final_n_vehicles"] != optimized["final_n_vehicles"]
-        )
+        speeds_differ = abs(fixed["mean_speed_ms"] - optimized["mean_speed_ms"]) > 1e-6
+        stops_differ = abs(fixed["mean_stops"] - optimized["mean_stops"]) > 1e-6
+        throughput_differs = abs(fixed["total_throughput"] - optimized["total_throughput"]) > 1e-6
+        vehicles_differ = fixed["final_n_vehicles"] != optimized["final_n_vehicles"]
 
         assert speeds_differ or stops_differ or throughput_differs or vehicles_differ, (
             "Fixed and optimized modes produced identical results -- "
@@ -248,6 +257,7 @@ class TestModeDifference:
 # ======================================================================
 # Additional validation: dimensional analysis & edge cases
 # ======================================================================
+
 
 class TestDimensionalConsistency:
     """Verify units and dimensional relationships."""

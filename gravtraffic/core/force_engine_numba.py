@@ -37,6 +37,7 @@ except ImportError:
     def njit(*args, **kwargs):  # type: ignore[misc]
         def decorator(fn):
             return fn
+
         if args and callable(args[0]):
             return args[0]
         return decorator
@@ -44,12 +45,14 @@ except ImportError:
     def prange(*args):  # type: ignore[misc]
         return range(*args)
 
+
 __all__ = ["ForceEngineNumba", "ForceEngineBHNumba", "NUMBA_AVAILABLE"]
 
 
 # ======================================================================
 # JIT kernels — compiled once, reused across calls
 # ======================================================================
+
 
 @njit(cache=True)
 def _naive_forces_jit_serial(
@@ -91,6 +94,7 @@ def _naive_forces_jit_serial(
 # Barnes-Hut flattened-tree JIT kernel
 # ======================================================================
 
+
 @njit(cache=True)
 def _bh_compute_force_jit(
     query_x: float,
@@ -98,23 +102,23 @@ def _bh_compute_force_jit(
     query_mass: float,
     query_idx: int,
     # Tree arrays (flattened):
-    node_count: np.ndarray,       # (M,) int — particles in subtree
+    node_count: np.ndarray,  # (M,) int — particles in subtree
     node_total_mass: np.ndarray,  # (M,) float — sum of masses
-    node_com_x: np.ndarray,       # (M,) float — center of mass x
-    node_com_y: np.ndarray,       # (M,) float — center of mass y
-    node_xmin: np.ndarray,        # (M,) float
-    node_ymin: np.ndarray,        # (M,) float
-    node_xmax: np.ndarray,        # (M,) float
-    node_ymax: np.ndarray,        # (M,) float
-    node_is_leaf: np.ndarray,     # (M,) bool
-    node_children: np.ndarray,    # (M, 4) int — child indices, -1 if none
+    node_com_x: np.ndarray,  # (M,) float — center of mass x
+    node_com_y: np.ndarray,  # (M,) float — center of mass y
+    node_xmin: np.ndarray,  # (M,) float
+    node_ymin: np.ndarray,  # (M,) float
+    node_xmax: np.ndarray,  # (M,) float
+    node_ymax: np.ndarray,  # (M,) float
+    node_is_leaf: np.ndarray,  # (M,) bool
+    node_children: np.ndarray,  # (M, 4) int — child indices, -1 if none
     # Leaf particle data:
-    leaf_start: np.ndarray,       # (M,) int — start index in particle arrays
-    leaf_size: np.ndarray,        # (M,) int — number of particles in leaf
-    part_idx: np.ndarray,         # (P,) int — particle global index
-    part_x: np.ndarray,           # (P,) float
-    part_y: np.ndarray,           # (P,) float
-    part_m: np.ndarray,           # (P,) float
+    leaf_start: np.ndarray,  # (M,) int — start index in particle arrays
+    leaf_size: np.ndarray,  # (M,) int — number of particles in leaf
+    part_idx: np.ndarray,  # (P,) int — particle global index
+    part_x: np.ndarray,  # (P,) float
+    part_y: np.ndarray,  # (P,) float
+    part_m: np.ndarray,  # (P,) float
     # Physics:
     G_s: float,
     eps2: float,
@@ -156,8 +160,10 @@ def _bh_compute_force_jit(
             continue
 
         # Check if query is inside the cell
-        inside = (node_xmin[node] <= query_x <= node_xmax[node] and
-                  node_ymin[node] <= query_y <= node_ymax[node])
+        inside = (
+            node_xmin[node] <= query_x <= node_xmax[node]
+            and node_ymin[node] <= query_y <= node_ymax[node]
+        )
 
         if not inside:
             # Opening angle test
@@ -197,6 +203,7 @@ def _bh_compute_force_jit(
 # Public classes
 # ======================================================================
 
+
 class ForceEngineNumba:
     """Numba JIT-compiled O(N²) gravitational force engine.
 
@@ -213,8 +220,7 @@ class ForceEngineNumba:
     def __init__(self, G_s: float = 5.0, softening: float = 10.0) -> None:
         if not NUMBA_AVAILABLE:
             raise RuntimeError(
-                "Numba is required for JIT acceleration. "
-                "Install with: pip install numba"
+                "Numba is required for JIT acceleration. Install with: pip install numba"
             )
         self.G_s = float(G_s)
         self.epsilon = float(softening)
@@ -231,9 +237,7 @@ class ForceEngineNumba:
         n = len(masses)
         if n == 0:
             return np.zeros((0, 2), dtype=np.float64)
-        return _naive_forces_jit_serial(
-            positions, masses, self.G_s, self.epsilon * self.epsilon
-        )
+        return _naive_forces_jit_serial(positions, masses, self.G_s, self.epsilon * self.epsilon)
 
     def compute_all_naive(
         self,
@@ -310,8 +314,7 @@ class ForceEngineBHNumba:
             tree = QuadTree(bbox, capacity=8)
             for idx in indices:
                 ii = int(idx)
-                tree.insert(ii, float(positions[ii, 0]),
-                            float(positions[ii, 1]), float(masses[ii]))
+                tree.insert(ii, float(positions[ii, 0]), float(positions[ii, 1]), float(masses[ii]))
             trees_flat.append(_flatten_tree(tree.root))
 
         # Compute forces via JIT kernel — sum over both trees
@@ -325,15 +328,25 @@ class ForceEngineBHNumba:
                     float(positions[i, 1]),
                     float(masses[i]),
                     i,
-                    arrays["count"], arrays["total_mass"],
-                    arrays["com_x"], arrays["com_y"],
-                    arrays["xmin"], arrays["ymin"],
-                    arrays["xmax"], arrays["ymax"],
-                    arrays["is_leaf"], arrays["children"],
-                    arrays["leaf_start"], arrays["leaf_size"],
-                    arrays["part_idx"], arrays["part_x"],
-                    arrays["part_y"], arrays["part_m"],
-                    self.G_s, eps2, theta,
+                    arrays["count"],
+                    arrays["total_mass"],
+                    arrays["com_x"],
+                    arrays["com_y"],
+                    arrays["xmin"],
+                    arrays["ymin"],
+                    arrays["xmax"],
+                    arrays["ymax"],
+                    arrays["is_leaf"],
+                    arrays["children"],
+                    arrays["leaf_start"],
+                    arrays["leaf_size"],
+                    arrays["part_idx"],
+                    arrays["part_x"],
+                    arrays["part_y"],
+                    arrays["part_m"],
+                    self.G_s,
+                    eps2,
+                    theta,
                 )
                 forces[i, 0] += fx
                 forces[i, 1] += fy
@@ -354,8 +367,7 @@ def _flatten_tree(root) -> dict:
         p_start = len(particles)
         if node.is_leaf:
             for k in range(len(node.indices)):
-                particles.append((node.indices[k], node.px[k],
-                                  node.py[k], node.pm[k]))
+                particles.append((node.indices[k], node.px[k], node.py[k], node.pm[k]))
         p_size = len(particles) - p_start
 
         # Placeholder children
@@ -414,10 +426,20 @@ def _flatten_tree(root) -> dict:
         part_m[k] = pm
 
     return {
-        "count": count, "total_mass": total_mass,
-        "com_x": com_x, "com_y": com_y,
-        "xmin": xmin, "ymin": ymin, "xmax": xmax, "ymax": ymax,
-        "is_leaf": is_leaf, "children": children,
-        "leaf_start": leaf_start, "leaf_size": leaf_size,
-        "part_idx": part_idx, "part_x": part_x, "part_y": part_y, "part_m": part_m,
+        "count": count,
+        "total_mass": total_mass,
+        "com_x": com_x,
+        "com_y": com_y,
+        "xmin": xmin,
+        "ymin": ymin,
+        "xmax": xmax,
+        "ymax": ymax,
+        "is_leaf": is_leaf,
+        "children": children,
+        "leaf_start": leaf_start,
+        "leaf_size": leaf_size,
+        "part_idx": part_idx,
+        "part_x": part_x,
+        "part_y": part_y,
+        "part_m": part_m,
     }

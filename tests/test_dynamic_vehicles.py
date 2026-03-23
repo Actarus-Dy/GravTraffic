@@ -15,29 +15,33 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gravtraffic.core.simulation import GravSimulation
 from gravtraffic.agents.traffic_model import TrafficModel
 from gravtraffic.agents.vehicle_agent import VehicleAgent
+from gravtraffic.core.simulation import GravSimulation
 from gravtraffic.network.road_network import RoadNetwork
-
 
 # ======================================================================
 # Fixtures
 # ======================================================================
+
 
 @pytest.fixture()
 def sim_20() -> GravSimulation:
     """GravSimulation initialised with 20 vehicles on a 500 m segment."""
     rng = np.random.default_rng(77)
     n = 20
-    positions = np.column_stack([
-        rng.uniform(0, 500, n),
-        rng.uniform(-5, 5, n),
-    ])
-    velocities = np.column_stack([
-        rng.uniform(10, 30, n),
-        np.zeros(n),
-    ])
+    positions = np.column_stack(
+        [
+            rng.uniform(0, 500, n),
+            rng.uniform(-5, 5, n),
+        ]
+    )
+    velocities = np.column_stack(
+        [
+            rng.uniform(10, 30, n),
+            np.zeros(n),
+        ]
+    )
     densities = rng.uniform(10, 80, n)
 
     sim = GravSimulation(G_s=2.0, beta=0.5, v_max=36.0, adaptive_dt=False, dt=0.05)
@@ -72,6 +76,7 @@ def model(grid_network: RoadNetwork) -> TrafficModel:
 # GravSimulation -- add_vehicles
 # ======================================================================
 
+
 class TestGravSimAddVehicles:
     """Tests 1-2: add_vehicles grows arrays and computes masses."""
 
@@ -79,14 +84,18 @@ class TestGravSimAddVehicles:
         """Test 1: Adding K vehicles increases all arrays by K."""
         old_n = sim_20.n_vehicles
         k = 5
-        new_pos = np.column_stack([
-            np.linspace(100, 400, k),
-            np.zeros(k),
-        ])
-        new_vel = np.column_stack([
-            np.full(k, 20.0),
-            np.zeros(k),
-        ])
+        new_pos = np.column_stack(
+            [
+                np.linspace(100, 400, k),
+                np.zeros(k),
+            ]
+        )
+        new_vel = np.column_stack(
+            [
+                np.full(k, 20.0),
+                np.zeros(k),
+            ]
+        )
         new_rho = np.full(k, 30.0)
 
         indices = sim_20.add_vehicles(new_pos, new_vel, new_rho)
@@ -132,6 +141,7 @@ class TestGravSimAddVehicles:
 # GravSimulation -- remove_vehicles
 # ======================================================================
 
+
 class TestGravSimRemoveVehicles:
     """Tests 3-4: remove_vehicles shrinks arrays, preserves remaining data."""
 
@@ -166,6 +176,7 @@ class TestGravSimRemoveVehicles:
 # ======================================================================
 # GravSimulation -- add then step / remove then step
 # ======================================================================
+
 
 class TestGravSimStepAfterDynamic:
     """Tests 5-7: Simulation steps correctly after add/remove."""
@@ -217,6 +228,7 @@ class TestGravSimStepAfterDynamic:
 # TrafficModel -- spawn_vehicle
 # ======================================================================
 
+
 class TestTrafficModelSpawn:
     """Tests 8: spawn_vehicle grows both agent list and simulation."""
 
@@ -249,6 +261,7 @@ class TestTrafficModelSpawn:
 # TrafficModel -- despawn_vehicle
 # ======================================================================
 
+
 class TestTrafficModelDespawn:
     """Test 9: despawn_vehicle shrinks both systems."""
 
@@ -267,6 +280,7 @@ class TestTrafficModelDespawn:
 # ======================================================================
 # TrafficModel -- despawn_out_of_bounds
 # ======================================================================
+
 
 class TestTrafficModelDespawnOOB:
     """Test 10: despawn_out_of_bounds removes vehicles outside bbox."""
@@ -294,15 +308,14 @@ class TestTrafficModelDespawnOOB:
 
     def test_oob_no_removal_when_all_inside(self, model: TrafficModel) -> None:
         """despawn_out_of_bounds returns 0 when all vehicles are inside bbox."""
-        removed = model.despawn_out_of_bounds(
-            x_min=-1e6, y_min=-1e6, x_max=1e6, y_max=1e6
-        )
+        removed = model.despawn_out_of_bounds(x_min=-1e6, y_min=-1e6, x_max=1e6, y_max=1e6)
         assert removed == 0
 
 
 # ======================================================================
 # TrafficModel -- spawn + step + despawn cycle
 # ======================================================================
+
 
 class TestTrafficModelSpawnStepDespawnCycle:
     """Test 11: Full spawn/step/despawn cycle over 10 steps."""
@@ -321,9 +334,7 @@ class TestTrafficModelSpawnStepDespawnCycle:
             model.step()
 
             # Despawn anything outside a generous bbox
-            model.despawn_out_of_bounds(
-                x_min=-2000.0, y_min=-2000.0, x_max=2000.0, y_max=2000.0
-            )
+            model.despawn_out_of_bounds(x_min=-2000.0, y_min=-2000.0, x_max=2000.0, y_max=2000.0)
 
             # Invariant: agent list and physics engine stay aligned
             assert len(model.vehicle_agents) == model.simulation.n_vehicles

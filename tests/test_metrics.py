@@ -30,10 +30,10 @@ class TestComputeThroughput:
         dt = 1.0  # 1 second timestep
         prev = np.array(
             [
-                [90.0, 0.0],   # crosses left-to-right
-                [95.0, 5.0],   # crosses left-to-right
+                [90.0, 0.0],  # crosses left-to-right
+                [95.0, 5.0],  # crosses left-to-right
                 [110.0, 0.0],  # crosses right-to-left
-                [50.0, 0.0],   # stays left
+                [50.0, 0.0],  # stays left
                 [150.0, 0.0],  # stays right
             ],
             dtype=np.float64,

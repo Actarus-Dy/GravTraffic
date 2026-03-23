@@ -13,12 +13,10 @@ import numpy as np
 import pytest
 
 from gravtraffic.core.calibration_pure import (
-    run_pure_gravity_test,
-    run_generation_test,
-    pure_gravity_grid_search,
-    print_grid_search_report,
-    V_FREE_MS,
     RHO_JAM,
+    V_FREE_MS,
+    run_generation_test,
+    run_pure_gravity_test,
 )
 
 
@@ -29,11 +27,18 @@ class TestRunPureGravityTest:
     """Validate the output structure and basic sanity of a single test run."""
 
     REQUIRED_KEYS = {
-        "G_s", "beta", "softening",
-        "densities", "mean_speeds", "greenshields_speeds",
-        "r_squared", "rmse_ms",
-        "monotonic", "stable",
-        "speed_drift_pct", "notes",
+        "G_s",
+        "beta",
+        "softening",
+        "densities",
+        "mean_speeds",
+        "greenshields_speeds",
+        "r_squared",
+        "rmse_ms",
+        "monotonic",
+        "stable",
+        "speed_drift_pct",
+        "notes",
     }
 
     def test_returns_all_keys(self) -> None:
@@ -60,7 +65,9 @@ class TestRunPureGravityTest:
     def test_custom_densities(self) -> None:
         """Custom density list is respected."""
         result = run_pure_gravity_test(
-            G_s=2.0, beta=0.5, softening=10.0,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
             densities=[20.0, 50.0, 100.0],
             n_steps=10,
         )
@@ -70,7 +77,9 @@ class TestRunPureGravityTest:
     def test_greenshields_reference_correct(self) -> None:
         """Greenshields reference speeds are analytically correct."""
         result = run_pure_gravity_test(
-            G_s=2.0, beta=0.5, softening=10.0,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
             densities=[0.0, 75.0, 150.0],
             n_steps=5,
         )
@@ -119,13 +128,9 @@ class TestStability:
             (0.5, 0.3, 5.0),
         ],
     )
-    def test_stable_configuration(
-        self, G_s: float, beta: float, softening: float
-    ) -> None:
+    def test_stable_configuration(self, G_s: float, beta: float, softening: float) -> None:
         """Configuration (G_s, beta, softening) produces a stable result."""
-        result = run_pure_gravity_test(
-            G_s=G_s, beta=beta, softening=softening, n_steps=50
-        )
+        result = run_pure_gravity_test(G_s=G_s, beta=beta, softening=softening, n_steps=50)
         # At least check that we got finite speeds
         assert np.all(np.isfinite(result["mean_speeds"])), (
             f"Non-finite speeds for G_s={G_s}, beta={beta}, softening={softening}: "
@@ -141,9 +146,7 @@ class TestStability:
         ]
         any_stable = False
         for G_s, beta, softening in configs:
-            result = run_pure_gravity_test(
-                G_s=G_s, beta=beta, softening=softening, n_steps=50
-            )
+            result = run_pure_gravity_test(G_s=G_s, beta=beta, softening=softening, n_steps=50)
             if result["stable"]:
                 any_stable = True
                 break
@@ -158,9 +161,7 @@ class TestSpeedBounds:
 
     def test_speeds_nonnegative(self) -> None:
         """Mean speeds should be non-negative for all densities."""
-        result = run_pure_gravity_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=100
-        )
+        result = run_pure_gravity_test(G_s=2.0, beta=0.5, softening=10.0, n_steps=100)
         if result["stable"]:
             assert np.all(result["mean_speeds"] >= -0.5), (
                 f"Negative mean speeds: {result['mean_speeds']}"
@@ -168,9 +169,7 @@ class TestSpeedBounds:
 
     def test_speeds_bounded_above(self) -> None:
         """Mean speeds should not greatly exceed v_free."""
-        result = run_pure_gravity_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=100
-        )
+        result = run_pure_gravity_test(G_s=2.0, beta=0.5, softening=10.0, n_steps=100)
         if result["stable"]:
             # Allow 10% overshoot from v_max clipping
             assert np.all(result["mean_speeds"] <= V_FREE_MS * 1.2), (
@@ -187,9 +186,7 @@ class TestGridSearch:
     def test_grid_search_returns_results(self) -> None:
         """Grid search returns a non-empty list."""
         # Use a minimal subset to keep test fast
-        result_single = run_pure_gravity_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=10
-        )
+        result_single = run_pure_gravity_test(G_s=2.0, beta=0.5, softening=10.0, n_steps=10)
         # Just verify it returns a dict -- full grid search tested below
         assert isinstance(result_single, dict)
 
@@ -220,9 +217,7 @@ class TestScientificInspection:
 
     def test_print_single_run_details(self) -> None:
         """Print detailed output of a single run for inspection."""
-        result = run_pure_gravity_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=200
-        )
+        result = run_pure_gravity_test(G_s=2.0, beta=0.5, softening=10.0, n_steps=200)
 
         print("\n" + "=" * 70)
         print("SINGLE RUN DETAILS: G_s=2.0, beta=0.5, softening=10.0, n_steps=200")
@@ -255,9 +250,7 @@ class TestScientificInspection:
         for G_s in G_s_vals:
             for beta in beta_vals:
                 for soft in soft_vals:
-                    r = run_pure_gravity_test(
-                        G_s=G_s, beta=beta, softening=soft, n_steps=100
-                    )
+                    r = run_pure_gravity_test(G_s=G_s, beta=beta, softening=soft, n_steps=100)
                     results.append(r)
 
         results.sort(key=lambda x: x["r_squared"], reverse=True)
@@ -265,12 +258,14 @@ class TestScientificInspection:
         print("\n" + "=" * 80)
         print("TOP 5 PARAMETER SETS (mini grid search)")
         print("=" * 80)
-        print(f"{'Rank':<6} {'G_s':>6} {'beta':>6} {'soft':>6} "
-              f"{'R^2':>10} {'RMSE':>8} {'Mon':>5} {'Stab':>5} {'Drift%':>8}")
+        print(
+            f"{'Rank':<6} {'G_s':>6} {'beta':>6} {'soft':>6} "
+            f"{'R^2':>10} {'RMSE':>8} {'Mon':>5} {'Stab':>5} {'Drift%':>8}"
+        )
         print("-" * 80)
         for i, r in enumerate(results[:5]):
             print(
-                f"{i+1:<6} {r['G_s']:>6.1f} {r['beta']:>6.2f} {r['softening']:>6.1f} "
+                f"{i + 1:<6} {r['G_s']:>6.1f} {r['beta']:>6.2f} {r['softening']:>6.1f} "
                 f"{r['r_squared']:>10.6f} {r['rmse_ms']:>8.4f} "
                 f"{'Y' if r['monotonic'] else 'N':>5} "
                 f"{'Y' if r['stable'] else 'N':>5} "
@@ -315,7 +310,9 @@ class TestDimensionalAnalysis:
         # that the output has physically meaningful magnitudes.
 
         result = run_pure_gravity_test(
-            G_s=2.0, beta=1.0, softening=10.0,
+            G_s=2.0,
+            beta=1.0,
+            softening=10.0,
             densities=[30.0],  # moderate density
             n_steps=50,
         )
@@ -323,9 +320,7 @@ class TestDimensionalAnalysis:
             speed = result["mean_speeds"][0]
             # At 30 veh/km, Greenshields gives v = 33.33 * (1 - 30/150) = 26.66 m/s
             # The simulation should produce a speed in a reasonable range
-            assert 0.0 <= speed <= 40.0, (
-                f"Speed {speed} m/s outside physical range at 30 veh/km"
-            )
+            assert 0.0 <= speed <= 40.0, f"Speed {speed} m/s outside physical range at 30 veh/km"
 
     def test_force_softening_scale(self) -> None:
         """Softening length should be comparable to inter-vehicle spacing.
@@ -338,7 +333,9 @@ class TestDimensionalAnalysis:
         # Softening of 2-20 m spans a reasonable range
         for soft in [2.0, 5.0, 10.0, 20.0]:
             result = run_pure_gravity_test(
-                G_s=2.0, beta=0.5, softening=soft,
+                G_s=2.0,
+                beta=0.5,
+                softening=soft,
                 densities=[30.0],
                 n_steps=20,
             )
@@ -363,7 +360,10 @@ class TestGenerationVsPreservation:
     def test_generation_test_returns_valid_dict(self) -> None:
         """Generation test returns all expected keys."""
         result = run_generation_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=10,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            n_steps=10,
         )
         assert "generates_fd" in result
         assert "initial_speeds" in result
@@ -373,18 +373,26 @@ class TestGenerationVsPreservation:
     def test_initial_speeds_are_near_vfree(self) -> None:
         """In the generation test, all initial speeds should be near v_free."""
         result = run_generation_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=10,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            n_steps=10,
         )
         # All initial mean speeds should be within 2 m/s of v_free
         np.testing.assert_allclose(
-            result["initial_speeds"], V_FREE_MS, atol=2.0,
+            result["initial_speeds"],
+            V_FREE_MS,
+            atol=2.0,
             err_msg="Initial speeds should all be near v_free",
         )
 
     def test_generation_print_results(self) -> None:
         """Print generation test results for scientific inspection."""
         result = run_generation_test(
-            G_s=2.0, beta=0.5, softening=10.0, n_steps=200,
+            G_s=2.0,
+            beta=0.5,
+            softening=10.0,
+            n_steps=200,
         )
 
         print("\n" + "=" * 80)
@@ -397,8 +405,10 @@ class TestGenerationVsPreservation:
         print(f"Stable: {result['stable']}")
         print(f"Notes: {result['notes']}")
         print()
-        print(f"{'Density':>10} {'v_initial':>12} {'v_final':>12} "
-              f"{'v_greenshlds':>14} {'reduction':>12}")
+        print(
+            f"{'Density':>10} {'v_initial':>12} {'v_final':>12} "
+            f"{'v_greenshlds':>14} {'reduction':>12}"
+        )
         print("-" * 65)
         for i in range(len(result["densities"])):
             rho = result["densities"][i]

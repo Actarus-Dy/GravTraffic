@@ -12,17 +12,17 @@ Date: 2026-03-22
 
 from __future__ import annotations
 
+import mesa
 import numpy as np
 import pytest
-import mesa
 
-from gravtraffic.core.green_wave import GreenWaveCoordinator
 from gravtraffic.agents.intersection_agent import IntersectionAgent
-
+from gravtraffic.core.green_wave import GreenWaveCoordinator
 
 # ------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------
+
 
 def _make_model() -> mesa.Model:
     """Create a minimal Mesa model for agent construction."""
@@ -51,6 +51,7 @@ def _make_intersection(
 # Test: compute_offsets -- 5 intersections spaced 200 m apart
 # ------------------------------------------------------------------
 
+
 class TestComputeOffsets:
     """Tests for GreenWaveCoordinator.compute_offsets."""
 
@@ -63,13 +64,16 @@ class TestComputeOffsets:
         Derivation: v = 50 km/h = 50000/3600 m/s.
         200 / (50000/3600) = 200 * 3600 / 50000 = 720000 / 50000 = 14.4 s.
         """
-        positions = np.array([
-            [0.0, 0.0],
-            [200.0, 0.0],
-            [400.0, 0.0],
-            [600.0, 0.0],
-            [800.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [200.0, 0.0],
+                [400.0, 0.0],
+                [600.0, 0.0],
+                [800.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         gw = GreenWaveCoordinator(wave_speed=50.0 / 3.6)
         offsets = gw.compute_offsets(positions)
@@ -90,11 +94,14 @@ class TestComputeOffsets:
             projections = 0, 100*sqrt(2), 200*sqrt(2)
             offsets = projections / v_wave
         """
-        positions = np.array([
-            [0.0, 0.0],
-            [100.0, 100.0],
-            [200.0, 200.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [100.0, 100.0],
+                [200.0, 200.0],
+            ],
+            dtype=np.float64,
+        )
 
         direction = np.array([1.0, 1.0], dtype=np.float64)
         v_wave = 10.0  # m/s for simple arithmetic
@@ -102,11 +109,14 @@ class TestComputeOffsets:
         offsets = gw.compute_offsets(positions, corridor_direction=direction)
 
         sqrt2 = np.sqrt(2.0)
-        expected = np.array([
-            0.0,
-            100.0 * sqrt2 / v_wave,
-            200.0 * sqrt2 / v_wave,
-        ], dtype=np.float64)
+        expected = np.array(
+            [
+                0.0,
+                100.0 * sqrt2 / v_wave,
+                200.0 * sqrt2 / v_wave,
+            ],
+            dtype=np.float64,
+        )
 
         assert offsets.dtype == np.float64
         np.testing.assert_allclose(offsets, expected, rtol=1e-12)
@@ -125,6 +135,7 @@ class TestComputeOffsets:
 # Test: apply_offsets
 # ------------------------------------------------------------------
 
+
 class TestApplyOffsets:
     """Tests for GreenWaveCoordinator.apply_offsets."""
 
@@ -134,10 +145,7 @@ class TestApplyOffsets:
         model = _make_model()
 
         # 3 intersections, each with cycle = 120 s (60 + 60, 2 phases)
-        agents = [
-            _make_intersection(model, i * 200.0, 0.0, node_id=i)
-            for i in range(3)
-        ]
+        agents = [_make_intersection(model, i * 200.0, 0.0, node_id=i) for i in range(3)]
 
         # Offsets: 0, 30, 90 seconds
         offsets = np.array([0.0, 30.0, 90.0], dtype=np.float64)
@@ -179,17 +187,21 @@ class TestApplyOffsets:
 # Test: optimize_wave_speed
 # ------------------------------------------------------------------
 
+
 class TestOptimizeWaveSpeed:
     """Tests for GreenWaveCoordinator.optimize_wave_speed."""
 
     def test_result_in_valid_range(self):
         """Optimal speed must be within the specified search range."""
-        positions = np.array([
-            [0.0, 0.0],
-            [200.0, 0.0],
-            [400.0, 0.0],
-            [600.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [200.0, 0.0],
+                [400.0, 0.0],
+                [600.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         green_times = [60.0, 60.0]
         speed_range = (8.0, 20.0)
@@ -203,10 +215,13 @@ class TestOptimizeWaveSpeed:
 
     def test_result_is_positive_float(self):
         """Optimal speed must be a positive float."""
-        positions = np.array([
-            [0.0, 0.0],
-            [300.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [300.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         green_times = [45.0, 35.0]
 
@@ -221,6 +236,7 @@ class TestOptimizeWaveSpeed:
 # Test: edge cases and validation
 # ------------------------------------------------------------------
 
+
 class TestEdgeCases:
     """Validation and edge-case tests."""
 
@@ -233,10 +249,13 @@ class TestEdgeCases:
 
     def test_offsets_dtype_is_float64(self):
         """All returned offsets must be float64."""
-        positions = np.array([
-            [0.0, 0.0],
-            [100.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [100.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
         gw = GreenWaveCoordinator()
         offsets = gw.compute_offsets(positions)
         assert offsets.dtype == np.float64

@@ -16,8 +16,8 @@ from __future__ import annotations
 import json
 import time
 
-from gravtraffic.validation.fundamental_diagram import run_fd_sweep
 from gravtraffic.validation.emergence import run_emergence_analysis
+from gravtraffic.validation.fundamental_diagram import run_fd_sweep
 
 
 def run_validation_suite(
@@ -52,15 +52,21 @@ def run_validation_suite(
     # 1. Fundamental diagram with calibrated parameters
     fd_result = run_fd_sweep(
         densities=fd_densities,
-        G_s=5.0, beta=0.5, gamma=0.3,
-        n_steps=fd_steps, warmup_steps=fd_steps * 2 // 3,
+        G_s=5.0,
+        beta=0.5,
+        gamma=0.3,
+        n_steps=fd_steps,
+        warmup_steps=fd_steps * 2 // 3,
         seed=seed,
     )
 
     # 2. Emergence analysis
     em_result = run_emergence_analysis(
-        G_s=5.0, beta=0.5, gamma=0.3,
-        n_steps=em_steps, seed=seed,
+        G_s=5.0,
+        beta=0.5,
+        gamma=0.3,
+        n_steps=em_steps,
+        seed=seed,
     )
 
     elapsed = time.monotonic() - t0
@@ -105,25 +111,25 @@ def main():
     print("Running GravTraffic validation suite (full)...")
     report = run_validation_suite(quick=False)
 
-    print(f"\n{'='*60}")
-    print(f"GravTraffic Validation Report")
-    print(f"{'='*60}")
+    print(f"\n{'=' * 60}")
+    print("GravTraffic Validation Report")
+    print(f"{'=' * 60}")
     print(f"Mode: {report['mode']} | Seed: {report['seed']} | Time: {report['elapsed_s']}s")
-    print(f"\nFundamental Diagram:")
+    print("\nFundamental Diagram:")
     print(f"  R² = {report['fundamental_diagram']['r_squared']:.4f}")
     print(f"  RMSE = {report['fundamental_diagram']['rmse_ms']:.2f} m/s")
     print(f"  Verdict: {report['fundamental_diagram']['verdict']}")
-    print(f"\nEmergence:")
+    print("\nEmergence:")
     print(f"  Score = {report['emergence']['score']:.2f}")
-    g_on = report['emergence']['gravity_on']
-    g_off = report['emergence']['gravity_off']
+    g_on = report["emergence"]["gravity_on"]
+    g_off = report["emergence"]["gravity_off"]
     print(f"  Upstream decel (gravity ON): {g_on['upstream_deceleration_ms']:.2f} m/s")
     print(f"  Upstream decel (gravity OFF): {g_off['upstream_deceleration_ms']:.2f} m/s")
     print(f"  Gini increase (ON): {g_on['gini_increase']:.4f}")
     print(f"  Wave speed: {g_on['wave_speed_ms']:.2f} m/s")
     print(f"  Verdict: {report['emergence']['verdict']}")
     print(f"\nOverall: {report['overall_verdict']}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # Save JSON
     with open("validation_report.json", "w") as f:

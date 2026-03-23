@@ -24,13 +24,12 @@ Greenshields, B.D. (1935). "A Study of Traffic Capacity."
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
-from gravtraffic.core.simulation import GravSimulation
 from gravtraffic.core.calibration_unified import (
     run_calibration_test,
     run_emergence_test,
 )
+from gravtraffic.core.simulation import GravSimulation
 
 
 # ===================================================================
@@ -55,21 +54,24 @@ class TestUnifiedParameterExists:
             cal = run_calibration_test(**params)
             emg = run_emergence_test(**params)
             unified = cal["r_squared"] > 0.70 and emg["emergence_pass"]
-            results.append({
-                **params,
-                "r_squared": cal["r_squared"],
-                "upstream_decel": emg["upstream_decel"],
-                "unified_pass": unified,
-            })
+            results.append(
+                {
+                    **params,
+                    "r_squared": cal["r_squared"],
+                    "upstream_decel": emg["upstream_decel"],
+                    "unified_pass": unified,
+                }
+            )
 
-            print(f"  G_s={params['G_s']}, gamma={params['gamma']}: "
-                  f"R^2={cal['r_squared']:.4f}, decel={emg['upstream_decel']:.2f} "
-                  f"-> {'PASS' if unified else 'FAIL'}")
+            print(
+                f"  G_s={params['G_s']}, gamma={params['gamma']}: "
+                f"R^2={cal['r_squared']:.4f}, decel={emg['upstream_decel']:.2f} "
+                f"-> {'PASS' if unified else 'FAIL'}"
+            )
 
         n_pass = sum(1 for r in results if r["unified_pass"])
         assert n_pass >= 1, (
-            f"No parameter set satisfies both calibration and emergence. "
-            f"Results: {results}"
+            f"No parameter set satisfies both calibration and emergence. Results: {results}"
         )
 
     def test_best_candidate_r_squared_above_090(self) -> None:
@@ -105,10 +107,12 @@ class TestDefaultCalibration:
             gamma=sim._drag_coefficient,
         )
 
-        print(f"\n--- Default Calibration Test ---")
-        print(f"  G_s={sim.G_s}, beta={sim._mass_assigner.beta}, "
-              f"softening={sim._force_engine.epsilon}, "
-              f"gamma={sim._drag_coefficient}")
+        print("\n--- Default Calibration Test ---")
+        print(
+            f"  G_s={sim.G_s}, beta={sim._mass_assigner.beta}, "
+            f"softening={sim._force_engine.epsilon}, "
+            f"gamma={sim._drag_coefficient}"
+        )
         print(f"  R^2 = {cal['r_squared']:.6f}")
         print(f"  Stable = {cal['stable']}")
         print(f"  Monotonic = {cal['monotonic']}")
@@ -140,8 +144,7 @@ class TestDefaultCalibration:
             gamma=sim._drag_coefficient,
         )
         assert cal["monotonic"], (
-            f"Speed is not monotonically decreasing with density. "
-            f"Mean speeds: {cal['mean_speeds']}"
+            f"Speed is not monotonically decreasing with density. Mean speeds: {cal['mean_speeds']}"
         )
 
 
@@ -162,7 +165,7 @@ class TestDefaultEmergence:
             gamma=sim._drag_coefficient,
         )
 
-        print(f"\n--- Default Emergence Test ---")
+        print("\n--- Default Emergence Test ---")
         print(f"  Upstream mean speed: {emg['upstream_mean_speed']:.2f} m/s")
         print(f"  Upstream deceleration: {emg['upstream_decel']:.2f} m/s")
         print(f"  Emergence pass: {emg['emergence_pass']}")
@@ -195,7 +198,7 @@ class TestDefaultEmergence:
         )
 
         # Downstream should be faster than upstream (asymmetric effect)
-        print(f"\n--- Downstream Fluidity ---")
+        print("\n--- Downstream Fluidity ---")
         print(f"  Upstream mean: {emg['upstream_mean_speed']:.2f} m/s")
         print(f"  Downstream mean: {emg['downstream_mean_speed']:.2f} m/s")
 
@@ -225,9 +228,12 @@ class TestDragZeroRecoversPureGravity:
         densities = np.full(n, 50.0, dtype=np.float64)
 
         sim = GravSimulation(
-            G_s=5.0, beta=0.5, softening=10.0,
+            G_s=5.0,
+            beta=0.5,
+            softening=10.0,
             drag_coefficient=0.0,  # pure gravity
-            dt=0.1, adaptive_dt=False,
+            dt=0.1,
+            adaptive_dt=False,
         )
         sim.init_vehicles(positions, velocities, densities)
         sim.run(100)
@@ -235,8 +241,8 @@ class TestDragZeroRecoversPureGravity:
         final_speeds = np.linalg.norm(sim.velocities, axis=1)
         mean_speed = float(np.mean(final_speeds))
 
-        print(f"\n--- Zero Drag Test ---")
-        print(f"  Initial mean speed: 25.0 m/s")
+        print("\n--- Zero Drag Test ---")
+        print("  Initial mean speed: 25.0 m/s")
         print(f"  Final mean speed:   {mean_speed:.4f} m/s")
         print(f"  Speed drift:        {abs(mean_speed - 25.0):.4f} m/s")
 
@@ -258,14 +264,12 @@ class TestPhysicalConsistency:
         which is correct for acceleration."""
         gamma = 0.3  # [1/s]
         v_eq = 20.0  # [m/s]
-        v_i = 25.0   # [m/s]
+        v_i = 25.0  # [m/s]
         drag_accel = gamma * (v_eq - v_i)  # [m/s^2]
 
         # This is negative (deceleration) because v_i > v_eq
         assert drag_accel < 0, f"Expected deceleration, got {drag_accel}"
-        assert abs(drag_accel - (-1.5)) < 1e-10, (
-            f"Drag accel = {drag_accel}, expected -1.5 m/s^2"
-        )
+        assert abs(drag_accel - (-1.5)) < 1e-10, f"Drag accel = {drag_accel}, expected -1.5 m/s^2"
 
     def test_drag_equilibrium_is_greenshields(self) -> None:
         """At drag equilibrium (a_drag = 0), v_i = v_eq(rho) = Greenshields."""

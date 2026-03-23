@@ -17,9 +17,9 @@ Date: 2026-03-22
 
 from __future__ import annotations
 
+import mesa
 import numpy as np
 import numpy.typing as npt
-import mesa
 
 from gravtraffic.core.signal_optimizer import optimize_signal_timing
 
@@ -80,9 +80,7 @@ class IntersectionAgent(mesa.Agent):
         super().__init__(model)
 
         # Immutable configuration
-        self.position: npt.NDArray[np.float64] = np.asarray(
-            position, dtype=np.float64
-        )
+        self.position: npt.NDArray[np.float64] = np.asarray(position, dtype=np.float64)
         self.node_id: int = int(node_id)
         self.n_phases: int = int(n_phases)
         self.cycle_s: float = float(cycle_s)
@@ -91,21 +89,15 @@ class IntersectionAgent(mesa.Agent):
 
         # Validate
         if self.position.shape != (2,):
-            raise ValueError(
-                f"position must have shape (2,), got {self.position.shape}"
-            )
+            raise ValueError(f"position must have shape (2,), got {self.position.shape}")
         if self.n_phases < 1:
             raise ValueError(f"n_phases must be >= 1, got {self.n_phases}")
         if self.red_light_mass <= 0.0:
-            raise ValueError(
-                f"red_light_mass must be positive, got {self.red_light_mass}"
-            )
+            raise ValueError(f"red_light_mass must be positive, got {self.red_light_mass}")
 
         # Phase state -- equal split initially
         self.current_phase: int = 0
-        self.green_times: list[float] = [
-            self.cycle_s / self.n_phases
-        ] * self.n_phases
+        self.green_times: list[float] = [self.cycle_s / self.n_phases] * self.n_phases
         self.time_in_phase: float = 0.0
         self.steps_since_optimize: int = 0
 

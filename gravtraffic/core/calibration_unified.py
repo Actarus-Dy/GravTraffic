@@ -37,8 +37,8 @@ __all__ = [
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-V_FREE_MS: float = 33.33       # m/s (120 km/h)
-RHO_JAM: float = 150.0         # veh/km
+V_FREE_MS: float = 33.33  # m/s (120 km/h)
+RHO_JAM: float = 150.0  # veh/km
 SEGMENT_LENGTH_M: float = 2000.0  # 2 km highway segment
 
 
@@ -143,9 +143,7 @@ def run_calibration_test(
         had_nan = False
         for _ in range(n_steps):
             result = sim.step()
-            if np.any(np.isnan(result["velocities"])) or np.any(
-                np.isinf(result["velocities"])
-            ):
+            if np.any(np.isnan(result["velocities"])) or np.any(np.isinf(result["velocities"])):
                 had_nan = True
                 break
 
@@ -262,9 +260,7 @@ def run_emergence_test(
     had_nan = False
     for _ in range(n_steps):
         result = sim.step()
-        if np.any(np.isnan(result["velocities"])) or np.any(
-            np.isinf(result["velocities"])
-        ):
+        if np.any(np.isnan(result["velocities"])) or np.any(np.isinf(result["velocities"])):
             had_nan = True
             break
 
@@ -346,17 +342,25 @@ def unified_grid_search(
                 for gamma in gamma_values:
                     count += 1
                     if verbose:
-                        print(f"[{count}/{total}] G_s={G_s}, beta={beta}, "
-                              f"soft={softening}, gamma={gamma}")
+                        print(
+                            f"[{count}/{total}] G_s={G_s}, beta={beta}, "
+                            f"soft={softening}, gamma={gamma}"
+                        )
 
                     try:
                         cal = run_calibration_test(
-                            G_s=G_s, beta=beta, softening=softening,
-                            gamma=gamma, seed=seed,
+                            G_s=G_s,
+                            beta=beta,
+                            softening=softening,
+                            gamma=gamma,
+                            seed=seed,
                         )
                         emg = run_emergence_test(
-                            G_s=G_s, beta=beta, softening=softening,
-                            gamma=gamma, seed=seed,
+                            G_s=G_s,
+                            beta=beta,
+                            softening=softening,
+                            gamma=gamma,
+                            seed=seed,
                         )
 
                         # Unified score: R^2 * (upstream_decel / 2.0)
@@ -365,39 +369,43 @@ def unified_grid_search(
                         decel = emg["upstream_decel"] if emg["stable"] else 0.0
                         unified = max(0.0, r2) * min(1.0, decel / 2.0)
 
-                        results.append({
-                            "G_s": float(G_s),
-                            "beta": float(beta),
-                            "softening": float(softening),
-                            "gamma": float(gamma),
-                            "r_squared": float(r2),
-                            "upstream_decel": float(decel),
-                            "upstream_mean_speed": emg["upstream_mean_speed"],
-                            "downstream_mean_speed": emg["downstream_mean_speed"],
-                            "calibration_pass": r2 > 0.70,
-                            "emergence_pass": emg["emergence_pass"],
-                            "unified_pass": r2 > 0.70 and emg["emergence_pass"],
-                            "unified_score": float(unified),
-                            "stable": cal["stable"] and emg["stable"],
-                            "monotonic": cal["monotonic"],
-                        })
-                    except Exception as exc:
-                        results.append({
-                            "G_s": float(G_s),
-                            "beta": float(beta),
-                            "softening": float(softening),
-                            "gamma": float(gamma),
-                            "r_squared": float("-inf"),
-                            "upstream_decel": 0.0,
-                            "upstream_mean_speed": float("nan"),
-                            "downstream_mean_speed": float("nan"),
-                            "calibration_pass": False,
-                            "emergence_pass": False,
-                            "unified_pass": False,
-                            "unified_score": 0.0,
-                            "stable": False,
-                            "monotonic": False,
-                        })
+                        results.append(
+                            {
+                                "G_s": float(G_s),
+                                "beta": float(beta),
+                                "softening": float(softening),
+                                "gamma": float(gamma),
+                                "r_squared": float(r2),
+                                "upstream_decel": float(decel),
+                                "upstream_mean_speed": emg["upstream_mean_speed"],
+                                "downstream_mean_speed": emg["downstream_mean_speed"],
+                                "calibration_pass": r2 > 0.70,
+                                "emergence_pass": emg["emergence_pass"],
+                                "unified_pass": r2 > 0.70 and emg["emergence_pass"],
+                                "unified_score": float(unified),
+                                "stable": cal["stable"] and emg["stable"],
+                                "monotonic": cal["monotonic"],
+                            }
+                        )
+                    except Exception:
+                        results.append(
+                            {
+                                "G_s": float(G_s),
+                                "beta": float(beta),
+                                "softening": float(softening),
+                                "gamma": float(gamma),
+                                "r_squared": float("-inf"),
+                                "upstream_decel": 0.0,
+                                "upstream_mean_speed": float("nan"),
+                                "downstream_mean_speed": float("nan"),
+                                "calibration_pass": False,
+                                "emergence_pass": False,
+                                "unified_pass": False,
+                                "unified_score": 0.0,
+                                "stable": False,
+                                "monotonic": False,
+                            }
+                        )
 
     results.sort(key=lambda r: r["unified_score"], reverse=True)
     return results
@@ -417,13 +425,15 @@ def print_unified_report(results: list[dict], top_n: int = 10) -> None:
     print(f"Emergence pass (decel > 0.5 m/s): {emg_pass}/{len(results)}")
     print(f"UNIFIED PASS (both): {unified_pass}/{len(results)}")
 
-    print(f"\n{'Rank':<5} {'G_s':>5} {'beta':>5} {'soft':>5} {'gamma':>6} "
-          f"{'R^2':>8} {'decel':>7} {'score':>7} {'Cal':>4} {'Emg':>4} {'Both':>5}")
+    print(
+        f"\n{'Rank':<5} {'G_s':>5} {'beta':>5} {'soft':>5} {'gamma':>6} "
+        f"{'R^2':>8} {'decel':>7} {'score':>7} {'Cal':>4} {'Emg':>4} {'Both':>5}"
+    )
     print("-" * 90)
 
     for i, r in enumerate(results[:top_n]):
         print(
-            f"{i+1:<5} {r['G_s']:>5.0f} {r['beta']:>5.1f} {r['softening']:>5.0f} "
+            f"{i + 1:<5} {r['G_s']:>5.0f} {r['beta']:>5.1f} {r['softening']:>5.0f} "
             f"{r['gamma']:>6.2f} {r['r_squared']:>8.4f} "
             f"{r['upstream_decel']:>7.2f} {r['unified_score']:>7.4f} "
             f"{'Y' if r['calibration_pass'] else 'N':>4} "

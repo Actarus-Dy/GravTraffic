@@ -18,10 +18,10 @@ import pytest
 
 from gravtraffic.core.mass_assigner import MassAssigner
 
-
 # =====================================================================
 # Fixtures
 # =====================================================================
+
 
 @pytest.fixture
 def default_assigner() -> MassAssigner:
@@ -32,6 +32,7 @@ def default_assigner() -> MassAssigner:
 # =====================================================================
 # 1. Slow vehicle -> positive mass
 # =====================================================================
+
 
 class TestSlowVehicle:
     """A vehicle slower than v_mean must receive positive mass."""
@@ -62,6 +63,7 @@ class TestSlowVehicle:
 # 2. Fast vehicle -> negative mass
 # =====================================================================
 
+
 class TestFastVehicle:
     """A vehicle faster than v_mean must receive negative mass."""
 
@@ -90,6 +92,7 @@ class TestFastVehicle:
 # 3. Vehicle at v_mean -> neutral (mass ~ 0)
 # =====================================================================
 
+
 class TestNeutralVehicle:
     """A vehicle exactly at v_mean should have mass = 0."""
 
@@ -116,6 +119,7 @@ class TestNeutralVehicle:
 # =====================================================================
 # 4. Beta parameter affects magnitude
 # =====================================================================
+
 
 class TestBetaParameter:
     """The exponent beta must correctly scale the mass magnitude."""
@@ -174,6 +178,7 @@ class TestBetaParameter:
 # 5. rho_scale normalisation
 # =====================================================================
 
+
 class TestRhoScale:
     """Density normalisation by rho_scale must divide correctly."""
 
@@ -221,6 +226,7 @@ class TestRhoScale:
 # 6. Vectorization stress test (1 M vehicles)
 # =====================================================================
 
+
 class TestVectorization:
     """Ensure the computation is vectorized and can handle large arrays."""
 
@@ -253,6 +259,7 @@ class TestVectorization:
 # =====================================================================
 # 7. classify returns correct labels
 # =====================================================================
+
 
 class TestClassify:
     """Verify classification thresholds."""
@@ -289,6 +296,7 @@ class TestClassify:
 # =====================================================================
 # 8. End-to-end: assign + classify pipeline
 # =====================================================================
+
 
 class TestEndToEnd:
     """Full pipeline: speeds -> masses -> labels."""

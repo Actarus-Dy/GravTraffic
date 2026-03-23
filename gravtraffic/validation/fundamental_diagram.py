@@ -18,9 +18,7 @@ import numpy as np
 from gravtraffic.core.simulation import GravSimulation
 
 
-def greenshields_speed(
-    rho: float, v_free: float = 33.33, rho_jam: float = 150.0
-) -> float:
+def greenshields_speed(rho: float, v_free: float = 33.33, rho_jam: float = 150.0) -> float:
     """Theoretical Greenshields equilibrium speed."""
     return v_free * max(0.0, 1.0 - rho / rho_jam)
 
@@ -84,9 +82,15 @@ def run_fd_sweep(
         local_densities = np.full(n_veh, float(rho), dtype=np.float64)
 
         sim = GravSimulation(
-            G_s=G_s, beta=beta, softening=10.0,
-            dt=0.1, v_max=v_free + 3.0, adaptive_dt=False,
-            drag_coefficient=gamma, v_free=v_free, rho_jam=rho_jam,
+            G_s=G_s,
+            beta=beta,
+            softening=10.0,
+            dt=0.1,
+            v_max=v_free + 3.0,
+            adaptive_dt=False,
+            drag_coefficient=gamma,
+            v_free=v_free,
+            rho_jam=rho_jam,
             use_gpu=False,
         )
         sim.init_vehicles(positions, velocities, local_densities)
@@ -104,13 +108,15 @@ def run_fd_sweep(
         measured = float(np.mean(speed_samples))
         theoretical = greenshields_speed(rho, v_free, rho_jam)
 
-        results.append({
-            "density": rho,
-            "n_vehicles": n_veh,
-            "measured_speed": measured,
-            "theoretical_speed": theoretical,
-            "speed_std": float(np.std(speed_samples)),
-        })
+        results.append(
+            {
+                "density": rho,
+                "n_vehicles": n_veh,
+                "measured_speed": measured,
+                "theoretical_speed": theoretical,
+                "speed_std": float(np.std(speed_samples)),
+            }
+        )
 
     # Compute fit metrics
     measured_arr = np.array([r["measured_speed"] for r in results])
@@ -129,7 +135,10 @@ def run_fd_sweep(
         "rmse": rmse,
         "data_points": results,
         "parameters": {
-            "G_s": G_s, "beta": beta, "gamma": gamma,
-            "v_free": v_free, "rho_jam": rho_jam,
+            "G_s": G_s,
+            "beta": beta,
+            "gamma": gamma,
+            "v_free": v_free,
+            "rho_jam": rho_jam,
         },
     }

@@ -23,20 +23,20 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from gravtraffic.core.mass_assigner import MassAssigner
 from gravtraffic.core.force_engine import ForceEngine
+from gravtraffic.core.mass_assigner import MassAssigner
 
 __all__ = ["run_calibration_test", "calibration_viability_report"]
 
 # ---------------------------------------------------------------------------
 # Greenshields constants
 # ---------------------------------------------------------------------------
-V_FREE_KMH: float = 120.0          # km/h
+V_FREE_KMH: float = 120.0  # km/h
 V_FREE_MS: float = V_FREE_KMH / 3.6  # 33.333... m/s
-RHO_JAM: float = 150.0             # veh/km
-NOISE_SIGMA: float = 2.0           # m/s  Gaussian noise on speeds
-SEGMENT_LENGTH_KM: float = 1.0     # 1 km road segment
-SEGMENT_LENGTH_M: float = 1000.0   # meters
+RHO_JAM: float = 150.0  # veh/km
+NOISE_SIGMA: float = 2.0  # m/s  Gaussian noise on speeds
+SEGMENT_LENGTH_KM: float = 1.0  # 1 km road segment
+SEGMENT_LENGTH_M: float = 1000.0  # meters
 
 
 def _greenshields_speed(rho: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -281,9 +281,9 @@ def run_calibration_test(
 # Predefined configurations
 # ---------------------------------------------------------------------------
 CONFIGS = [
-    {"name": "Helbing",    "G_s": 2.0,  "beta": 0.5},
-    {"name": "GravJanus",  "G_s": 9.8,  "beta": 1.0},
-    {"name": "NonLinear",  "G_s": 15.0, "beta": 1.5},
+    {"name": "Helbing", "G_s": 2.0, "beta": 0.5},
+    {"name": "GravJanus", "G_s": 9.8, "beta": 1.0},
+    {"name": "NonLinear", "G_s": 15.0, "beta": 1.5},
 ]
 
 
@@ -324,20 +324,16 @@ def calibration_viability_report() -> list[dict]:
     # Viability assessment
     best = results[0]
     if best["r_squared"] >= 0.70:
-        print(f"PASS: Best R^2 = {best['r_squared']:.4f} >= 0.70 "
-              f"(config: {best['name']})")
-        print("The gravitational model can reproduce a plausible "
-              "speed-density relationship.")
+        print(f"PASS: Best R^2 = {best['r_squared']:.4f} >= 0.70 (config: {best['name']})")
+        print("The gravitational model can reproduce a plausible speed-density relationship.")
     else:
         print(f"WARN: Best R^2 = {best['r_squared']:.4f} < 0.70")
         print("Enrichment suggestions:")
-        print("  1. Introduce an explicit desired-speed relaxation term "
-              "(IDM-style)")
+        print("  1. Introduce an explicit desired-speed relaxation term (IDM-style)")
         print("  2. Add density-dependent softening length")
         print("  3. Tune rho_scale in MassAssigner to match scenario density")
         print("  4. Consider anisotropic forces (forward-looking bias)")
-        print("  5. Increase simulation steps or reduce dt for better "
-              "convergence")
+        print("  5. Increase simulation steps or reduce dt for better convergence")
     print("=" * 70)
 
     return results

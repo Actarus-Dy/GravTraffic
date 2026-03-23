@@ -29,7 +29,6 @@ Date: 2026-03-22
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 # Maximum tree depth to prevent infinite recursion on coincident particles.
 _MAX_DEPTH: int = 64
@@ -68,11 +67,22 @@ class QuadTreeNode:
     """
 
     __slots__ = (
-        "x_min", "y_min", "x_max", "y_max",
-        "capacity", "depth",
-        "total_mass", "com_x", "com_y", "count",
-        "children", "is_leaf",
-        "indices", "px", "py", "pm",
+        "x_min",
+        "y_min",
+        "x_max",
+        "y_max",
+        "capacity",
+        "depth",
+        "total_mass",
+        "com_x",
+        "com_y",
+        "count",
+        "children",
+        "is_leaf",
+        "indices",
+        "px",
+        "py",
+        "pm",
     )
 
     def __init__(
@@ -96,7 +106,7 @@ class QuadTreeNode:
         self.com_y: float = 0.0
         self.count: int = 0
 
-        self.children: list[Optional[QuadTreeNode]] = [None, None, None, None]
+        self.children: list[QuadTreeNode | None] = [None, None, None, None]
         self.is_leaf: bool = True
 
         # Leaf particle storage
@@ -163,9 +173,7 @@ class QuadTreeNode:
 
         # Redistribute existing particles.
         for i in range(len(self.indices)):
-            self._insert_into_child(
-                self.indices[i], self.px[i], self.py[i], self.pm[i]
-            )
+            self._insert_into_child(self.indices[i], self.px[i], self.py[i], self.pm[i])
 
         # Clear leaf storage.
         self.indices = []
@@ -173,9 +181,7 @@ class QuadTreeNode:
         self.py = []
         self.pm = []
 
-    def _insert_into_child(
-        self, index: int, x: float, y: float, mass: float
-    ) -> None:
+    def _insert_into_child(self, index: int, x: float, y: float, mass: float) -> None:
         """Route a particle to the correct child quadrant."""
         mx = (self.x_min + self.x_max) * 0.5
         my = (self.y_min + self.y_max) * 0.5
@@ -257,7 +263,7 @@ class QuadTreeNode:
         # Internal node: opening-angle test.
         # First, if the query particle lies inside this cell, always recurse
         # (never use the COM approximation for a cell containing the query).
-        if (self.x_min <= x <= self.x_max and self.y_min <= y <= self.y_max):
+        if self.x_min <= x <= self.x_max and self.y_min <= y <= self.y_max:
             # Query is inside this cell -- must recurse.
             fx_total = 0.0
             fy_total = 0.0
@@ -307,9 +313,7 @@ class QuadTreeNode:
         fy_total = 0.0
         for child in self.children:
             if child is not None and child.count > 0:
-                cfx, cfy = child.compute_force(
-                    x, y, mass, particle_index, G_s, softening, theta
-                )
+                cfx, cfy = child.compute_force(x, y, mass, particle_index, G_s, softening, theta)
                 fx_total += cfx
                 fy_total += cfy
         return (fx_total, fy_total)
@@ -335,9 +339,7 @@ class QuadTree:
     ) -> None:
         x_min, y_min, x_max, y_max = bbox
         self.capacity: int = capacity
-        self.root: QuadTreeNode = QuadTreeNode(
-            x_min, y_min, x_max, y_max, capacity, depth=0
-        )
+        self.root: QuadTreeNode = QuadTreeNode(x_min, y_min, x_max, y_max, capacity, depth=0)
 
     def insert(self, index: int, x: float, y: float, mass: float) -> None:
         """Insert a particle into the tree.
@@ -385,6 +387,4 @@ class QuadTree:
         tuple[float, float]
             (fx, fy) total force on the query particle.
         """
-        return self.root.compute_force(
-            x, y, mass, particle_index, G_s, softening, theta
-        )
+        return self.root.compute_force(x, y, mass, particle_index, G_s, softening, theta)

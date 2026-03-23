@@ -28,28 +28,26 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gravtraffic.core.simulation import GravSimulation
-from gravtraffic.core.mass_assigner import MassAssigner
 from gravtraffic.core.force_engine import ForceEngine
-from gravtraffic.core.integrator import leapfrog_step
-
+from gravtraffic.core.mass_assigner import MassAssigner
+from gravtraffic.core.simulation import GravSimulation
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 N_VEHICLES = 100
-HIGHWAY_LENGTH = 2000.0          # meters
-INITIAL_SPEED = 25.0             # m/s  (90 km/h)
-SLOW_SPEED = 5.0                 # m/s  (18 km/h)
-SLOW_POSITION = 1000.0           # meters (midpoint)
+HIGHWAY_LENGTH = 2000.0  # meters
+INITIAL_SPEED = 25.0  # m/s  (90 km/h)
+SLOW_SPEED = 5.0  # m/s  (18 km/h)
+SLOW_POSITION = 1000.0  # meters (midpoint)
 SPACING = HIGHWAY_LENGTH / N_VEHICLES  # ~20 m
 
 G_S = 2.0
 BETA = 0.5
 SOFTENING = 10.0
 DT = 0.1
-N_STEPS = 500                    # 50 seconds simulated
-V_MAX = 36.0                     # ~130 km/h
+N_STEPS = 500  # 50 seconds simulated
+V_MAX = 36.0  # ~130 km/h
 RHO_SCALE = 30.0
 THETA = 0.5
 SEED = 42
@@ -229,13 +227,12 @@ class TestUpstreamDeceleration:
         upstream_mean_speed = float(np.mean(final_speeds[upstream_mask]))
 
         # Diagnostic output
-        print(f"\n--- Test 1: Upstream Deceleration ---")
+        print("\n--- Test 1: Upstream Deceleration ---")
         print(f"  Vehicles in upstream window [800, 950]: {n_upstream}")
         print(f"  Initial mean speed (all): {INITIAL_SPEED:.1f} m/s")
         print(f"  Final upstream mean speed: {upstream_mean_speed:.2f} m/s")
-        print(f"  Threshold: < 23.0 m/s")
-        print(f"  Slow vehicle final speed: "
-              f"{np.linalg.norm(sim.velocities[slow_idx]):.2f} m/s")
+        print("  Threshold: < 23.0 m/s")
+        print(f"  Slow vehicle final speed: {np.linalg.norm(sim.velocities[slow_idx]):.2f} m/s")
         print(f"  Slow vehicle final x: {sim.positions[slow_idx, 0]:.1f} m")
 
         assert upstream_mean_speed < 23.0, (
@@ -270,11 +267,11 @@ class TestDownstreamFluidity:
         final_speeds = np.linalg.norm(sim.velocities, axis=1)
         downstream_mean_speed = float(np.mean(final_speeds[downstream_mask]))
 
-        print(f"\n--- Test 2: Downstream Fluidity ---")
+        print("\n--- Test 2: Downstream Fluidity ---")
         print(f"  Vehicles in downstream window [1050, 1200]: {n_downstream}")
         print(f"  Initial mean speed (all): {INITIAL_SPEED:.1f} m/s")
         print(f"  Final downstream mean speed: {downstream_mean_speed:.2f} m/s")
-        print(f"  Threshold: > 22.0 m/s")
+        print("  Threshold: > 22.0 m/s")
 
         assert downstream_mean_speed > 22.0, (
             f"Downstream fluidity NOT maintained: mean speed = "
@@ -323,15 +320,21 @@ class TestBackwardWavePropagation:
             state_400["positions"], state_400["velocities"], speed_threshold=20.0
         )
 
-        print(f"\n--- Test 3: Backward Wave Propagation ---")
-        print(f"  Congestion front at step 100: "
-              f"{f'{front_100:.1f} m' if front_100 is not None else 'NONE (no congestion)'}")
-        print(f"  Congestion front at step 400: "
-              f"{f'{front_400:.1f} m' if front_400 is not None else 'NONE (no congestion)'}")
+        print("\n--- Test 3: Backward Wave Propagation ---")
+        print(
+            f"  Congestion front at step 100: "
+            f"{f'{front_100:.1f} m' if front_100 is not None else 'NONE (no congestion)'}"
+        )
+        print(
+            f"  Congestion front at step 400: "
+            f"{f'{front_400:.1f} m' if front_400 is not None else 'NONE (no congestion)'}"
+        )
 
         if front_100 is not None and front_400 is not None:
-            print(f"  Front shift: {front_400 - front_100:.1f} m "
-                  f"({'upstream' if front_400 < front_100 else 'downstream'})")
+            print(
+                f"  Front shift: {front_400 - front_100:.1f} m "
+                f"({'upstream' if front_400 < front_100 else 'downstream'})"
+            )
 
         # Both fronts must exist for a shock wave
         assert front_100 is not None, (
@@ -370,9 +373,7 @@ class TestNoExplicitRules:
     def test_simulation_components_are_pure_physics(self) -> None:
         """Assert that GravSimulation contains only gravitational physics
         modules and no behavioral traffic rules."""
-        sim = GravSimulation(
-            G_s=G_S, beta=BETA, softening=SOFTENING, dt=DT, adaptive_dt=False
-        )
+        sim = GravSimulation(G_s=G_S, beta=BETA, softening=SOFTENING, dt=DT, adaptive_dt=False)
 
         # Verify the simulation uses exactly the expected sub-modules
         assert hasattr(sim, "_mass_assigner"), "Missing MassAssigner sub-module"
@@ -393,9 +394,9 @@ class TestNoExplicitRules:
             "lane_change",
             "gap",
             "headway",
-            "idm",               # Intelligent Driver Model
-            "wiedemann",         # Wiedemann car-following model
-            "gipps",             # Gipps car-following model
+            "idm",  # Intelligent Driver Model
+            "wiedemann",  # Wiedemann car-following model
+            "gipps",  # Gipps car-following model
             "reaction_time",
             "desired_speed",
             "safe_distance",
@@ -415,11 +416,11 @@ class TestNoExplicitRules:
                 f"gravitational physics alone, without explicit traffic rules."
             )
 
-        print(f"\n--- Test 4: No Explicit Rules ---")
+        print("\n--- Test 4: No Explicit Rules ---")
         print(f"  MassAssigner: present (type={type(sim._mass_assigner).__name__})")
         print(f"  ForceEngine:  present (type={type(sim._force_engine).__name__})")
-        print(f"  Behavioral rule attributes found: NONE")
-        print(f"  Conclusion: emergence is from gravitational physics only")
+        print("  Behavioral rule attributes found: NONE")
+        print("  Conclusion: emergence is from gravitational physics only")
 
     def test_mass_formula_is_speed_deviation(self) -> None:
         """Verify that mass assignment uses only speed deviation from mean,
@@ -433,19 +434,15 @@ class TestNoExplicitRules:
         masses = assigner.assign(speeds, v_mean, densities)
 
         # Vehicle 0: v=10 < v_mean=25, delta=15 > 0, mass > 0 (slow/attractor)
-        assert masses[0] > 0, (
-            f"Slow vehicle (v=10) should have positive mass, got {masses[0]:.4f}"
-        )
+        assert masses[0] > 0, f"Slow vehicle (v=10) should have positive mass, got {masses[0]:.4f}"
         # Vehicle 1: v=25 == v_mean, delta=0, mass == 0
         assert masses[1] == pytest.approx(0.0, abs=1e-12), (
             f"Mean-speed vehicle (v=25) should have zero mass, got {masses[1]:.4f}"
         )
         # Vehicle 2: v=30 > v_mean=25, delta=-5 < 0, mass < 0 (fast/repulsor)
-        assert masses[2] < 0, (
-            f"Fast vehicle (v=30) should have negative mass, got {masses[2]:.4f}"
-        )
+        assert masses[2] < 0, f"Fast vehicle (v=30) should have negative mass, got {masses[2]:.4f}"
 
-        print(f"\n--- Test 4b: Mass Formula Verification ---")
+        print("\n--- Test 4b: Mass Formula Verification ---")
         print(f"  v=10 (slow):    mass = {masses[0]:+.4f}  (positive = attractor)")
         print(f"  v=25 (mean):    mass = {masses[1]:+.4f}  (zero = neutral)")
         print(f"  v=30 (fast):    mass = {masses[2]:+.4f}  (negative = repulsor)")
@@ -475,11 +472,11 @@ class TestNoExplicitRules:
             f"Force y-component mismatch: got {fy}, expected {expected_fy}"
         )
 
-        print(f"\n--- Test 4c: Gravitational Force Verification ---")
+        print("\n--- Test 4c: Gravitational Force Verification ---")
         print(f"  m_i={m_i}, m_j={m_j}, dx={dx}, dy={dy}")
         print(f"  F = ({fx:.6f}, {fy:.6f})")
         print(f"  Expected = ({expected_fx:.6f}, {expected_fy:.6f})")
-        print(f"  Formula: F = +G_s * m_i * m_j / d^3 * (dx, dy)  [VERIFIED]")
+        print("  Formula: F = +G_s * m_i * m_j / d^3 * (dx, dy)  [VERIFIED]")
 
 
 # ===================================================================
@@ -502,8 +499,10 @@ class TestStrongCouplingEmergence:
     def test_upstream_deceleration_strong_coupling(self) -> None:
         """With strong coupling, upstream vehicles should decelerate."""
         sim, init_pos, init_vel, slow_idx = _run_simulation(
-            G_s=self.STRONG_G_S, softening=self.STRONG_SOFTENING,
-            drag_coefficient=0.0, n_steps=1000,
+            G_s=self.STRONG_G_S,
+            softening=self.STRONG_SOFTENING,
+            drag_coefficient=0.0,
+            n_steps=1000,
         )
 
         init_x = init_pos[:, 0]
@@ -511,7 +510,7 @@ class TestStrongCouplingEmergence:
         final_speeds = np.linalg.norm(sim.velocities, axis=1)
         upstream_mean = float(np.mean(final_speeds[upstream_mask]))
 
-        print(f"\n--- Test 5a: Strong Coupling Upstream Deceleration ---")
+        print("\n--- Test 5a: Strong Coupling Upstream Deceleration ---")
         print(f"  G_s={self.STRONG_G_S}, softening={self.STRONG_SOFTENING}")
         print(f"  Upstream mean speed: {upstream_mean:.2f} m/s")
         print(f"  Speed reduction: {INITIAL_SPEED - upstream_mean:.2f} m/s")
@@ -530,7 +529,8 @@ class TestStrongCouplingEmergence:
         relative to initial conditions (where std ~ 2.0 m/s due to the
         single slow vehicle).  Emergence means the perturbation SPREADS."""
         sim, init_pos, init_vel, slow_idx = _run_simulation(
-            G_s=self.STRONG_G_S, softening=self.STRONG_SOFTENING,
+            G_s=self.STRONG_G_S,
+            softening=self.STRONG_SOFTENING,
             drag_coefficient=0.0,
         )
 
@@ -545,11 +545,10 @@ class TestStrongCouplingEmergence:
         init_std_others = float(np.std(init_speeds[others]))
         final_std_others = float(np.std(final_speeds[others]))
 
-        print(f"\n--- Test 5b: Speed Variance Under Strong Coupling ---")
+        print("\n--- Test 5b: Speed Variance Under Strong Coupling ---")
         print(f"  G_s={self.STRONG_G_S}, softening={self.STRONG_SOFTENING}")
         print(f"  All vehicles:  init_std={init_std:.4f}, final_std={final_std:.4f}")
-        print(f"  Excl. slow:    init_std={init_std_others:.4f}, "
-              f"final_std={final_std_others:.4f}")
+        print(f"  Excl. slow:    init_std={init_std_others:.4f}, final_std={final_std_others:.4f}")
 
         # The perturbation should spread: final std (excluding slow veh)
         # should be larger than initial std (excluding slow veh, which is ~0)
@@ -576,21 +575,25 @@ class TestEmergenceSensitivity:
         pass/fail gate.  The printed output documents which G_s values
         produce emergence for parameter tuning.
         """
-        sim, history, init_pos, init_vel, slow_idx = (
-            _run_simulation_with_history(G_s=G_s_value)
-        )
+        sim, history, init_pos, init_vel, slow_idx = _run_simulation_with_history(G_s=G_s_value)
 
         init_x = init_pos[:, 0]
         final_speeds = np.linalg.norm(sim.velocities, axis=1)
 
         # Criterion 1: Upstream deceleration
         upstream_mask = (init_x >= 800.0) & (init_x <= 950.0)
-        upstream_mean = float(np.mean(final_speeds[upstream_mask])) if np.any(upstream_mask) else float("nan")
+        upstream_mean = (
+            float(np.mean(final_speeds[upstream_mask])) if np.any(upstream_mask) else float("nan")
+        )
         c1_pass = upstream_mean < 23.0
 
         # Criterion 2: Downstream fluidity
         downstream_mask = (init_x >= 1050.0) & (init_x <= 1200.0)
-        downstream_mean = float(np.mean(final_speeds[downstream_mask])) if np.any(downstream_mask) else float("nan")
+        downstream_mean = (
+            float(np.mean(final_speeds[downstream_mask]))
+            if np.any(downstream_mask)
+            else float("nan")
+        )
         c2_pass = downstream_mean > 22.0
 
         # Criterion 3: Backward wave propagation
@@ -602,11 +605,7 @@ class TestEmergenceSensitivity:
         front_400 = _find_congestion_front(
             state_400["positions"], state_400["velocities"], speed_threshold=20.0
         )
-        c3_pass = (
-            front_100 is not None
-            and front_400 is not None
-            and front_400 < front_100
-        )
+        c3_pass = front_100 is not None and front_400 is not None and front_400 < front_100
 
         # Overall emergence score
         n_criteria_met = sum([c1_pass, c2_pass, c3_pass])
@@ -617,29 +616,37 @@ class TestEmergenceSensitivity:
         speed_max = float(np.max(all_speeds))
         speed_std = float(np.std(all_speeds))
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  EMERGENCE SENSITIVITY REPORT: G_s = {G_s_value}")
-        print(f"{'='*60}")
-        print(f"  Final speed stats: min={speed_min:.2f}, max={speed_max:.2f}, "
-              f"std={speed_std:.2f} m/s")
+        print(f"{'=' * 60}")
+        print(
+            f"  Final speed stats: min={speed_min:.2f}, max={speed_max:.2f}, "
+            f"std={speed_std:.2f} m/s"
+        )
         print(f"  Mean speed: {float(np.mean(all_speeds)):.2f} m/s")
-        print(f"  Slow vehicle final speed: "
-              f"{np.linalg.norm(sim.velocities[slow_idx]):.2f} m/s")
-        print(f"")
-        print(f"  Criterion 1 (upstream decel):     "
-              f"{'PASS' if c1_pass else 'FAIL'}  "
-              f"(mean={upstream_mean:.2f} m/s, threshold < 23.0)")
-        print(f"  Criterion 2 (downstream fluid):   "
-              f"{'PASS' if c2_pass else 'FAIL'}  "
-              f"(mean={downstream_mean:.2f} m/s, threshold > 22.0)")
-        print(f"  Criterion 3 (backward wave):      "
-              f"{'PASS' if c3_pass else 'FAIL'}  "
-              f"(front@100={'%.1f' % front_100 if front_100 else 'NONE'}, "
-              f"front@400={'%.1f' % front_400 if front_400 else 'NONE'})")
-        print(f"")
+        print(f"  Slow vehicle final speed: {np.linalg.norm(sim.velocities[slow_idx]):.2f} m/s")
+        print("")
+        print(
+            f"  Criterion 1 (upstream decel):     "
+            f"{'PASS' if c1_pass else 'FAIL'}  "
+            f"(mean={upstream_mean:.2f} m/s, threshold < 23.0)"
+        )
+        print(
+            f"  Criterion 2 (downstream fluid):   "
+            f"{'PASS' if c2_pass else 'FAIL'}  "
+            f"(mean={downstream_mean:.2f} m/s, threshold > 22.0)"
+        )
+        print(
+            f"  Criterion 3 (backward wave):      "
+            f"{'PASS' if c3_pass else 'FAIL'}  "
+            f"(front@100={f'{front_100:.1f}' if front_100 else 'NONE'}, "
+            f"front@400={f'{front_400:.1f}' if front_400 else 'NONE'})"
+        )
+        print("")
         print(f"  EMERGENCE SCORE: {n_criteria_met}/3 criteria met")
-        print(f"  VERDICT: {'EMERGENCE OBSERVED' if n_criteria_met == 3 else 'PARTIAL or NO EMERGENCE'}")
-        print(f"{'='*60}")
+        verdict = "EMERGENCE OBSERVED" if n_criteria_met == 3 else "PARTIAL or NO EMERGENCE"
+        print(f"  VERDICT: {verdict}")
+        print(f"{'=' * 60}")
 
         # This test always passes -- it is informational.
         # The individual criterion tests (Test 1-3) are the actual gates.
@@ -654,17 +661,19 @@ class TestDiagnosticSpeedProfile:
 
     def test_speed_profile_snapshots(self) -> None:
         """Print speed vs position at steps 0, 100, 250, 500."""
-        sim, history, init_pos, init_vel, slow_idx = (
-            _run_simulation_with_history()
-        )
+        sim, history, init_pos, init_vel, slow_idx = _run_simulation_with_history()
 
         snapshot_steps = [0, 99, 249, 499]
-        snapshot_labels = ["step 0 (t=0s)", "step 100 (t=10s)",
-                           "step 250 (t=25s)", "step 500 (t=50s)"]
+        snapshot_labels = [
+            "step 0 (t=0s)",
+            "step 100 (t=10s)",
+            "step 250 (t=25s)",
+            "step 500 (t=50s)",
+        ]
 
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"  DIAGNOSTIC: Speed Profile Snapshots (G_s={G_S}, beta={BETA})")
-        print(f"{'='*70}")
+        print(f"{'=' * 70}")
 
         for step_idx, label in zip(snapshot_steps, snapshot_labels):
             if step_idx == 0:
@@ -678,7 +687,7 @@ class TestDiagnosticSpeedProfile:
             x_coords = pos[:, 0]
 
             # Sort by x for readable output
-            order = np.argsort(x_coords)
+            np.argsort(x_coords)
 
             # Print a compact summary: binned speed averages over 200m windows
             print(f"\n  {label}:")
@@ -690,17 +699,21 @@ class TestDiagnosticSpeedProfile:
                 if n_in_bin > 0:
                     bin_mean = float(np.mean(speeds[bin_mask]))
                     bin_min = float(np.min(speeds[bin_mask]))
-                    print(f"    [{bin_start:5d}, {bin_end:5d})  "
-                          f"{bin_mean:8.2f}    {bin_min:8.2f}    {n_in_bin:3d}")
+                    print(
+                        f"    [{bin_start:5d}, {bin_end:5d})  "
+                        f"{bin_mean:8.2f}    {bin_min:8.2f}    {n_in_bin:3d}"
+                    )
 
             # Overall stats
-            print(f"    Overall: mean={np.mean(speeds):.2f}, "
-                  f"std={np.std(speeds):.2f}, "
-                  f"min={np.min(speeds):.2f}, max={np.max(speeds):.2f} m/s")
+            print(
+                f"    Overall: mean={np.mean(speeds):.2f}, "
+                f"std={np.std(speeds):.2f}, "
+                f"min={np.min(speeds):.2f}, max={np.max(speeds):.2f} m/s"
+            )
 
         print(f"\n  Slow vehicle (idx={slow_idx}):")
         print(f"    Initial position: x={init_pos[slow_idx, 0]:.1f} m")
         print(f"    Final position:   x={sim.positions[slow_idx, 0]:.1f} m")
         print(f"    Initial speed:    {np.linalg.norm(init_vel[slow_idx]):.1f} m/s")
         print(f"    Final speed:      {np.linalg.norm(sim.velocities[slow_idx]):.1f} m/s")
-        print(f"{'='*70}")
+        print(f"{'=' * 70}")

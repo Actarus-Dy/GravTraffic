@@ -12,11 +12,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from gravtraffic.agents.intersection_agent import IntersectionAgent
 from gravtraffic.agents.traffic_model import TrafficModel
 from gravtraffic.agents.vehicle_agent import VehicleAgent
-from gravtraffic.agents.intersection_agent import IntersectionAgent
 from gravtraffic.network.road_network import RoadNetwork
-
 
 # ======================================================================
 # Fixtures
@@ -168,13 +167,9 @@ class TestAgentUpdate:
     """VehicleAgents are updated after each step -- positions change."""
 
     def test_positions_change(self, model: TrafficModel) -> None:
-        initial_positions = np.array(
-            [a.position.copy() for a in model.vehicle_agents]
-        )
+        initial_positions = np.array([a.position.copy() for a in model.vehicle_agents])
         model.step()
-        updated_positions = np.array(
-            [a.position for a in model.vehicle_agents]
-        )
+        updated_positions = np.array([a.position for a in model.vehicle_agents])
         # At least some vehicles must have moved
         assert not np.allclose(initial_positions, updated_positions, atol=1e-15), (
             "No vehicle moved after one step"
@@ -225,10 +220,7 @@ class TestIntersectionPhases:
         # The phase must have advanced: either current_phase differs, or
         # it wrapped back around.  We check the total elapsed time exceeds
         # one full green phase.
-        total_time = sum(
-            r.get("dt_used", model.dt)
-            for r in [model.simulation.step() for _ in range(0)]
-        )
+        sum(r.get("dt_used", model.dt) for r in [model.simulation.step() for _ in range(0)])
         # Simpler check: just ensure time_in_phase < green_duration
         # (which means a reset happened at some point)
         assert ia.time_in_phase < green_duration or ia.current_phase != initial_phase
@@ -293,8 +285,16 @@ class TestPotentialField:
     def test_required_keys(self, model: TrafficModel) -> None:
         model.step()
         pf = model.get_potential_field(resolution=50.0)
-        for key in ("potential", "grid_centers", "grid_width", "grid_height",
-                     "x_min", "y_min", "x_max", "y_max"):
+        for key in (
+            "potential",
+            "grid_centers",
+            "grid_width",
+            "grid_height",
+            "x_min",
+            "y_min",
+            "x_max",
+            "y_max",
+        ):
             assert key in pf, f"Missing key: {key}"
 
     def test_potential_shape(self, model: TrafficModel) -> None:
@@ -419,9 +419,7 @@ class TestVMaxEnforcement:
 class TestRedLightObstacles:
     """Red-light masses from IntersectionAgents are injected as obstacles."""
 
-    def test_obstacles_set_when_red_lights_exist(
-        self, model: TrafficModel
-    ) -> None:
+    def test_obstacles_set_when_red_lights_exist(self, model: TrafficModel) -> None:
         """After a step, the simulation should have obstacles if any
         intersection has a red phase."""
         if not model.intersection_agents:
@@ -438,22 +436,17 @@ class TestRedLightObstacles:
 
         if expected_count > 0:
             assert obs_count == expected_count, (
-                f"Expected {expected_count} obstacle masses, "
-                f"got {obs_count}"
+                f"Expected {expected_count} obstacle masses, got {obs_count}"
             )
         else:
             assert obs_count == 0
 
-    def test_no_obstacles_without_signals(
-        self, model_no_signals: TrafficModel
-    ) -> None:
+    def test_no_obstacles_without_signals(self, model_no_signals: TrafficModel) -> None:
         """Model with signals disabled should have zero obstacles."""
         model_no_signals.step()
         assert len(model_no_signals.simulation._obstacle_masses) == 0
 
-    def test_red_light_affects_nearby_vehicles(
-        self, grid_network: RoadNetwork
-    ) -> None:
+    def test_red_light_affects_nearby_vehicles(self, grid_network: RoadNetwork) -> None:
         """Vehicles near a red light should behave differently than in a
         signal-free model.
 
@@ -491,9 +484,7 @@ class TestRedLightObstacles:
             "positions -- red-light masses are not affecting physics"
         )
 
-    def test_obstacle_masses_are_positive(
-        self, model: TrafficModel
-    ) -> None:
+    def test_obstacle_masses_are_positive(self, model: TrafficModel) -> None:
         """Red-light obstacle masses must all be positive."""
         if not model.intersection_agents:
             pytest.skip("No intersection agents in model")

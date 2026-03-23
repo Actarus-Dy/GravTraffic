@@ -19,14 +19,13 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import numpy as np
-import pytest
 
-from gravtraffic.core.integrator import adaptive_dt, leapfrog_step, _clip_speed
-
+from gravtraffic.core.integrator import _clip_speed, adaptive_dt, leapfrog_step
 
 # ===================================================================
 # Helpers
 # ===================================================================
+
 
 def _gravitational_force_fn(G: float, m: float, softening: float = 0.0):
     """Return a force function for two equal masses with Newtonian gravity.
@@ -70,8 +69,9 @@ def _gravitational_force_fn(G: float, m: float, softening: float = 0.0):
     return force_fn
 
 
-def _total_energy(positions: np.ndarray, velocities: np.ndarray,
-                  G: float, m: float, softening: float = 0.0) -> float:
+def _total_energy(
+    positions: np.ndarray, velocities: np.ndarray, G: float, m: float, softening: float = 0.0
+) -> float:
     """Compute total energy (kinetic + potential) for equal-mass system.
 
     E = sum_i 0.5 * m * |v_i|^2 + sum_{i<j} -G * m^2 / d_ij
@@ -91,7 +91,7 @@ def _total_energy(positions: np.ndarray, velocities: np.ndarray,
     """
     n = positions.shape[0]
     # Kinetic energy
-    KE = 0.5 * m * np.sum(velocities ** 2)
+    KE = 0.5 * m * np.sum(velocities**2)
 
     # Potential energy
     PE = 0.0
@@ -110,6 +110,7 @@ def _total_energy(positions: np.ndarray, velocities: np.ndarray,
 # Test 1: Energy conservation for near-circular orbit
 # ===================================================================
 
+
 class TestEnergyConservation:
     """Two equal positive masses in near-circular orbit.
 
@@ -126,10 +127,13 @@ class TestEnergyConservation:
 
         # Place masses on x-axis, separated by distance r
         r = 10.0
-        positions = np.array([
-            [-r / 2.0, 0.0],
-            [r / 2.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [-r / 2.0, 0.0],
+                [r / 2.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         # Circular orbit velocity: v = sqrt(G * m / (4 * r)) for two
         # equal masses separated by r orbiting their center of mass.
@@ -139,10 +143,13 @@ class TestEnergyConservation:
         # F = G*m^2/r^2, each feels F, acceleration = G*m/r^2
         # Circular at radius r/2: a = v^2/(r/2) => v = sqrt(a * r/2) = sqrt(G*m/(2*r))
         v_circ = np.sqrt(G * m / (2.0 * r))
-        velocities = np.array([
-            [0.0, -v_circ],
-            [0.0, v_circ],
-        ], dtype=np.float64)
+        velocities = np.array(
+            [
+                [0.0, -v_circ],
+                [0.0, v_circ],
+            ],
+            dtype=np.float64,
+        )
 
         force_fn = _gravitational_force_fn(G, m, softening)
 
@@ -217,6 +224,7 @@ class TestEnergyConservation:
 # Test 2: Straight-line motion under zero force
 # ===================================================================
 
+
 class TestStraightLineMotion:
     """Zero force should produce constant velocity and exact linear motion."""
 
@@ -242,12 +250,14 @@ class TestStraightLineMotion:
         expected_pos = pos0 + vel0 * (10 * dt)
 
         np.testing.assert_allclose(
-            positions, expected_pos, rtol=0, atol=1e-12,
-            err_msg="Position diverged from exact straight-line solution"
+            positions,
+            expected_pos,
+            rtol=0,
+            atol=1e-12,
+            err_msg="Position diverged from exact straight-line solution",
         )
         np.testing.assert_allclose(
-            velocities, vel0, rtol=0, atol=1e-12,
-            err_msg="Velocity changed under zero force"
+            velocities, vel0, rtol=0, atol=1e-12, err_msg="Velocity changed under zero force"
         )
 
     def test_single_particle_no_interaction(self):
@@ -272,6 +282,7 @@ class TestStraightLineMotion:
 # ===================================================================
 # Test 3: Speed clipping
 # ===================================================================
+
 
 class TestSpeedClipping:
     """Verify that speed never exceeds v_max under high forces."""
@@ -320,16 +331,18 @@ class TestSpeedClipping:
             speeds = np.linalg.norm(velocities, axis=1)
             for i in range(n):
                 assert speeds[i] <= v_max_per[i] + 1e-12, (
-                    f"Vehicle {i}: speed {speeds[i]:.4f} exceeds "
-                    f"v_max={v_max_per[i]}"
+                    f"Vehicle {i}: speed {speeds[i]:.4f} exceeds v_max={v_max_per[i]}"
                 )
 
     def test_clip_preserves_direction(self):
         """Clipping should reduce magnitude but preserve direction."""
-        velocities = np.array([
-            [30.0, 40.0],   # speed = 50, should be clipped to 10
-            [3.0, 4.0],     # speed = 5, below limit
-        ], dtype=np.float64)
+        velocities = np.array(
+            [
+                [30.0, 40.0],  # speed = 50, should be clipped to 10
+                [3.0, 4.0],  # speed = 5, below limit
+            ],
+            dtype=np.float64,
+        )
 
         result = _clip_speed(velocities, v_max=10.0)
 
@@ -357,59 +370,79 @@ class TestSpeedClipping:
 # Test 4: Adaptive timestep
 # ===================================================================
 
+
 class TestAdaptiveDt:
     """Test that adaptive_dt responds correctly to particle spacing."""
 
     def test_close_particles_smaller_dt(self):
         """Closely spaced particles should produce a smaller dt."""
         # Closely spaced
-        positions_close = np.array([
-            [0.0, 0.0],
-            [0.1, 0.0],
-        ], dtype=np.float64)
-        velocities = np.array([
-            [10.0, 0.0],
-            [-10.0, 0.0],
-        ], dtype=np.float64)
+        positions_close = np.array(
+            [
+                [0.0, 0.0],
+                [0.1, 0.0],
+            ],
+            dtype=np.float64,
+        )
+        velocities = np.array(
+            [
+                [10.0, 0.0],
+                [-10.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         dt_close = adaptive_dt(positions_close, velocities, dt_max=1.0, dt_min=0.001)
 
         # Widely spaced
-        positions_wide = np.array([
-            [0.0, 0.0],
-            [1000.0, 0.0],
-        ], dtype=np.float64)
+        positions_wide = np.array(
+            [
+                [0.0, 0.0],
+                [1000.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         dt_wide = adaptive_dt(positions_wide, velocities, dt_max=1.0, dt_min=0.001)
 
-        assert dt_close < dt_wide, (
-            f"Close dt ({dt_close}) should be less than wide dt ({dt_wide})"
-        )
+        assert dt_close < dt_wide, f"Close dt ({dt_close}) should be less than wide dt ({dt_wide})"
 
     def test_widely_spaced_returns_dt_max(self):
         """Very widely spaced, slow particles should return dt_max."""
-        positions = np.array([
-            [0.0, 0.0],
-            [1e6, 0.0],
-        ], dtype=np.float64)
-        velocities = np.array([
-            [0.001, 0.0],
-            [0.001, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [1e6, 0.0],
+            ],
+            dtype=np.float64,
+        )
+        velocities = np.array(
+            [
+                [0.001, 0.0],
+                [0.001, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         dt = adaptive_dt(positions, velocities, dt_max=0.5, dt_min=0.01)
         assert dt == 0.5, f"Expected dt_max=0.5, got {dt}"
 
     def test_overlapping_particles_returns_dt_min(self):
         """Overlapping particles (d_min ~ 0) should return dt_min."""
-        positions = np.array([
-            [5.0, 5.0],
-            [5.0, 5.0],
-        ], dtype=np.float64)
-        velocities = np.array([
-            [10.0, 0.0],
-            [-10.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [5.0, 5.0],
+                [5.0, 5.0],
+            ],
+            dtype=np.float64,
+        )
+        velocities = np.array(
+            [
+                [10.0, 0.0],
+                [-10.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         dt = adaptive_dt(positions, velocities, dt_max=0.2, dt_min=0.005)
         assert dt == 0.005, f"Expected dt_min=0.005, got {dt}"
@@ -424,10 +457,13 @@ class TestAdaptiveDt:
 
     def test_stationary_particles_returns_dt_max(self):
         """All particles stationary -> dt_max."""
-        positions = np.array([
-            [0.0, 0.0],
-            [1.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [1.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
         velocities = np.zeros((2, 2), dtype=np.float64)
 
         dt = adaptive_dt(positions, velocities, dt_max=0.2, dt_min=0.01)
@@ -435,14 +471,20 @@ class TestAdaptiveDt:
 
     def test_cfl_formula_exact(self):
         """Verify the CFL formula: dt = d_min / (2 * v_max)."""
-        positions = np.array([
-            [0.0, 0.0],
-            [20.0, 0.0],
-        ], dtype=np.float64)
-        velocities = np.array([
-            [5.0, 0.0],
-            [0.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [20.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
+        velocities = np.array(
+            [
+                [5.0, 0.0],
+                [0.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
 
         # d_min = 20.0, v_max = 5.0
         # dt_cfl = 20.0 / (2 * 5.0) = 2.0
@@ -457,38 +499,48 @@ class TestAdaptiveDt:
     def test_many_particles_sorted_approximation(self):
         """With multiple particles, the sort-by-x approximation should
         find a reasonable d_min."""
-        positions = np.array([
-            [0.0, 0.0],
-            [100.0, 0.0],
-            [100.5, 0.0],   # closest pair: 0.5 apart
-            [200.0, 0.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [0.0, 0.0],
+                [100.0, 0.0],
+                [100.5, 0.0],  # closest pair: 0.5 apart
+                [200.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
         velocities = np.full((4, 2), 10.0, dtype=np.float64)
 
         # d_min ~ 0.5, v_max ~ sqrt(200) ~ 14.14
         # dt_cfl ~ 0.5 / (2 * 14.14) ~ 0.0177
         dt = adaptive_dt(positions, velocities, dt_max=1.0, dt_min=0.001)
         assert dt < 0.1, f"Expected small dt due to close pair, got {dt}"
-        assert dt >= 0.001, f"dt should not go below dt_min"
+        assert dt >= 0.001, "dt should not go below dt_min"
 
 
 # ===================================================================
 # Test 5: Symmetry preservation
 # ===================================================================
 
+
 class TestSymmetry:
     """Two identical particles at symmetric positions should stay
     symmetric after integration."""
 
     def test_symmetric_particles_stay_symmetric(self):
-        positions = np.array([
-            [-50.0, 0.0],
-            [50.0, 0.0],
-        ], dtype=np.float64)
-        velocities = np.array([
-            [0.0, 5.0],
-            [0.0, -5.0],
-        ], dtype=np.float64)
+        positions = np.array(
+            [
+                [-50.0, 0.0],
+                [50.0, 0.0],
+            ],
+            dtype=np.float64,
+        )
+        velocities = np.array(
+            [
+                [0.0, 5.0],
+                [0.0, -5.0],
+            ],
+            dtype=np.float64,
+        )
 
         def symmetric_force(pos, vel=None):
             """Repulsive force along separation axis."""
@@ -516,25 +568,25 @@ class TestSymmetry:
 
         # Check symmetry: center of mass should be at origin
         com = np.mean(positions, axis=0)
-        np.testing.assert_allclose(com, [0.0, 0.0], atol=1e-12,
-                                   err_msg="Center of mass drifted from origin")
+        np.testing.assert_allclose(
+            com, [0.0, 0.0], atol=1e-12, err_msg="Center of mass drifted from origin"
+        )
 
         # Positions should be mirror-symmetric about origin
         np.testing.assert_allclose(
-            positions[0], -positions[1], atol=1e-12,
-            err_msg="Positions lost mirror symmetry"
+            positions[0], -positions[1], atol=1e-12, err_msg="Positions lost mirror symmetry"
         )
 
         # Velocities should be antisymmetric
         np.testing.assert_allclose(
-            velocities[0], -velocities[1], atol=1e-12,
-            err_msg="Velocities lost antisymmetry"
+            velocities[0], -velocities[1], atol=1e-12, err_msg="Velocities lost antisymmetry"
         )
 
 
 # ===================================================================
 # Test 6: force_fn called with updated positions
 # ===================================================================
+
 
 class TestForceCallback:
     """Verify that force_fn receives the drifted (updated) positions,
@@ -546,9 +598,7 @@ class TestForceCallback:
         forces = np.zeros((2, 2), dtype=np.float64)
         dt = 0.5
 
-        mock_force_fn = MagicMock(
-            return_value=np.zeros((2, 2), dtype=np.float64)
-        )
+        mock_force_fn = MagicMock(return_value=np.zeros((2, 2), dtype=np.float64))
 
         leapfrog_step(positions, velocities, forces, dt, mock_force_fn, v_max=100.0)
 
@@ -563,8 +613,10 @@ class TestForceCallback:
         expected_new = np.array([[0.5, 0.0], [10.0, 0.0]], dtype=np.float64)
 
         np.testing.assert_allclose(
-            called_positions, expected_new, atol=1e-12,
-            err_msg="force_fn was not called with the drifted positions"
+            called_positions,
+            expected_new,
+            atol=1e-12,
+            err_msg="force_fn was not called with the drifted positions",
         )
 
     def test_force_fn_called_exactly_once_per_step(self):
@@ -574,9 +626,7 @@ class TestForceCallback:
         velocities = np.zeros((n, 2), dtype=np.float64)
         forces = np.zeros((n, 2), dtype=np.float64)
 
-        mock_force_fn = MagicMock(
-            return_value=np.zeros((n, 2), dtype=np.float64)
-        )
+        mock_force_fn = MagicMock(return_value=np.zeros((n, 2), dtype=np.float64))
 
         num_steps = 7
         for _ in range(num_steps):
@@ -585,14 +635,14 @@ class TestForceCallback:
             )
 
         assert mock_force_fn.call_count == num_steps, (
-            f"force_fn called {mock_force_fn.call_count} times, "
-            f"expected {num_steps}"
+            f"force_fn called {mock_force_fn.call_count} times, expected {num_steps}"
         )
 
 
 # ===================================================================
 # Test: dtype enforcement
 # ===================================================================
+
 
 class TestDtypeEnforcement:
     """Ensure all outputs are float64."""

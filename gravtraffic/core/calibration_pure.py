@@ -61,10 +61,10 @@ __all__ = [
 # ---------------------------------------------------------------------------
 # Greenshields constants
 # ---------------------------------------------------------------------------
-V_FREE_MS: float = 33.33       # m/s (120 km/h)
-RHO_JAM: float = 150.0         # veh/km
+V_FREE_MS: float = 33.33  # m/s (120 km/h)
+RHO_JAM: float = 150.0  # veh/km
 SEGMENT_LENGTH_M: float = 2000.0  # 2 km highway segment
-NOISE_SIGMA: float = 1.0       # m/s -- small perturbation around equilibrium
+NOISE_SIGMA: float = 1.0  # m/s -- small perturbation around equilibrium
 
 
 def _greenshields_speed(rho: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -209,9 +209,7 @@ def run_pure_gravity_test(
 
     for idx, rho in enumerate(densities):
         # Create fresh scenario for this density
-        positions, velocities, local_dens = _setup_scenario(
-            rho, v_free, rho_jam, rng
-        )
+        positions, velocities, local_dens = _setup_scenario(rho, v_free, rho_jam, rng)
         initial_mean_speeds[idx] = float(np.mean(np.linalg.norm(velocities, axis=1)))
 
         # Create simulation with PURE GRAVITY -- no relaxation, no damping
@@ -231,9 +229,7 @@ def run_pure_gravity_test(
         had_nan = False
         for _ in range(n_steps):
             result = sim.step()
-            if np.any(np.isnan(result["velocities"])) or np.any(
-                np.isinf(result["velocities"])
-            ):
+            if np.any(np.isnan(result["velocities"])) or np.any(np.isinf(result["velocities"])):
                 had_nan = True
                 break
 
@@ -298,9 +294,7 @@ def run_pure_gravity_test(
     }
 
 
-def _interpret_result(
-    r2: float, stable: bool, monotonic: bool, drift_pct: float
-) -> str:
+def _interpret_result(r2: float, stable: bool, monotonic: bool, drift_pct: float) -> str:
     """Generate human-readable interpretation of test results."""
     parts: list[str] = []
 
@@ -323,17 +317,11 @@ def _interpret_result(
         parts.append("WARNING: Speed is NOT monotonically decreasing with density.")
 
     if drift_pct < 5.0:
-        parts.append(
-            f"Speed drift {drift_pct:.1f}% -- gravity preserves initial equilibrium well."
-        )
+        parts.append(f"Speed drift {drift_pct:.1f}% -- gravity preserves initial equilibrium well.")
     elif drift_pct < 20.0:
-        parts.append(
-            f"Speed drift {drift_pct:.1f}% -- moderate perturbation from initial speeds."
-        )
+        parts.append(f"Speed drift {drift_pct:.1f}% -- moderate perturbation from initial speeds.")
     else:
-        parts.append(
-            f"Speed drift {drift_pct:.1f}% -- large deviation from initial conditions."
-        )
+        parts.append(f"Speed drift {drift_pct:.1f}% -- large deviation from initial conditions.")
 
     return " ".join(parts)
 
@@ -414,9 +402,7 @@ def run_generation_test(
         had_nan = False
         for _ in range(n_steps):
             result = sim.step()
-            if np.any(np.isnan(result["velocities"])) or np.any(
-                np.isinf(result["velocities"])
-            ):
+            if np.any(np.isnan(result["velocities"])) or np.any(np.isinf(result["velocities"])):
                 had_nan = True
                 break
 
@@ -441,8 +427,7 @@ def run_generation_test(
         monotonic = bool(np.all(diffs <= 1.0))
         # More stringent: speed must actually decrease significantly
         generates_fd = (
-            monotonic
-            and (mean_speeds[0] - mean_speeds[-1]) > 5.0  # at least 5 m/s range
+            monotonic and (mean_speeds[0] - mean_speeds[-1]) > 5.0  # at least 5 m/s range
         )
     else:
         monotonic = False
@@ -456,11 +441,15 @@ def run_generation_test(
         r2 = float("-inf")
         rmse_val = float("inf")
 
-    drift_pct = float(
-        np.mean(np.abs(mean_speeds - initial_mean_speeds))
-        / max(np.mean(np.abs(initial_mean_speeds)), 1e-10)
-        * 100.0
-    ) if stable else float("inf")
+    drift_pct = (
+        float(
+            np.mean(np.abs(mean_speeds - initial_mean_speeds))
+            / max(np.mean(np.abs(initial_mean_speeds)), 1e-10)
+            * 100.0
+        )
+        if stable
+        else float("inf")
+    )
 
     # Interpretation
     parts: list[str] = []
@@ -521,7 +510,7 @@ def pure_gravity_grid_search(seed: int = 42) -> list[dict]:
 
     results: list[dict] = []
 
-    total = len(G_s_values) * len(beta_values) * len(softening_values)
+    len(G_s_values) * len(beta_values) * len(softening_values)
     count = 0
 
     for G_s in G_s_values:
@@ -538,20 +527,22 @@ def pure_gravity_grid_search(seed: int = 42) -> list[dict]:
                     results.append(result)
                 except Exception as exc:
                     # Record the failure but continue the search
-                    results.append({
-                        "G_s": float(G_s),
-                        "beta": float(beta),
-                        "softening": float(softening),
-                        "densities": np.array([]),
-                        "mean_speeds": np.array([]),
-                        "greenshields_speeds": np.array([]),
-                        "r_squared": float("-inf"),
-                        "rmse_ms": float("inf"),
-                        "monotonic": False,
-                        "stable": False,
-                        "speed_drift_pct": float("inf"),
-                        "notes": f"EXCEPTION: {exc!r}",
-                    })
+                    results.append(
+                        {
+                            "G_s": float(G_s),
+                            "beta": float(beta),
+                            "softening": float(softening),
+                            "densities": np.array([]),
+                            "mean_speeds": np.array([]),
+                            "greenshields_speeds": np.array([]),
+                            "r_squared": float("-inf"),
+                            "rmse_ms": float("inf"),
+                            "monotonic": False,
+                            "stable": False,
+                            "speed_drift_pct": float("inf"),
+                            "notes": f"EXCEPTION: {exc!r}",
+                        }
+                    )
 
     # Sort by R^2 descending
     results.sort(key=lambda r: r["r_squared"], reverse=True)
@@ -588,13 +579,15 @@ def print_grid_search_report(results: list[dict], top_n: int = 10) -> None:
         print(f"  Monotonic: {best['monotonic']}, Stable: {best['stable']}")
         print(f"  Drift: {best['speed_drift_pct']:.1f}%")
 
-    print(f"\n{'Rank':<6} {'G_s':>6} {'beta':>6} {'soft':>6} "
-          f"{'R^2':>10} {'RMSE(m/s)':>10} {'Mon':>5} {'Stab':>5} {'Drift%':>8}")
+    print(
+        f"\n{'Rank':<6} {'G_s':>6} {'beta':>6} {'soft':>6} "
+        f"{'R^2':>10} {'RMSE(m/s)':>10} {'Mon':>5} {'Stab':>5} {'Drift%':>8}"
+    )
     print("-" * 80)
 
     for i, r in enumerate(results[:top_n]):
         print(
-            f"{i+1:<6} {r['G_s']:>6.1f} {r['beta']:>6.2f} {r['softening']:>6.1f} "
+            f"{i + 1:<6} {r['G_s']:>6.1f} {r['beta']:>6.2f} {r['softening']:>6.1f} "
             f"{r['r_squared']:>10.6f} {r['rmse_ms']:>10.4f} "
             f"{'Y' if r['monotonic'] else 'N':>5} "
             f"{'Y' if r['stable'] else 'N':>5} "

@@ -11,20 +11,20 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gravtraffic.validation.fundamental_diagram import (
-    greenshields_speed,
-    run_fd_sweep,
-)
 from gravtraffic.validation.emergence import (
     gini_coefficient,
     run_emergence_analysis,
 )
+from gravtraffic.validation.fundamental_diagram import (
+    greenshields_speed,
+    run_fd_sweep,
+)
 from gravtraffic.validation.report import run_validation_suite
-
 
 # ---------------------------------------------------------------------------
 # Fundamental Diagram
 # ---------------------------------------------------------------------------
+
 
 class TestGreenshieldsSpeed:
     def test_free_flow(self) -> None:
@@ -44,7 +44,9 @@ class TestFDSweep:
     def test_sweep_returns_expected_keys(self) -> None:
         result = run_fd_sweep(
             densities=[20, 60, 100],
-            n_steps=50, warmup_steps=20, seed=42,
+            n_steps=50,
+            warmup_steps=20,
+            seed=42,
         )
         assert "r_squared" in result
         assert "rmse" in result
@@ -56,7 +58,9 @@ class TestFDSweep:
         """With calibrated params and sufficient warmup, R² should exceed 0.5."""
         result = run_fd_sweep(
             densities=[20, 40, 60, 80, 100],
-            n_steps=400, warmup_steps=250, seed=42,
+            n_steps=400,
+            warmup_steps=250,
+            seed=42,
         )
         assert result["r_squared"] > 0.5, (
             f"R²={result['r_squared']:.4f} too low — model may not converge "
@@ -67,18 +71,20 @@ class TestFDSweep:
         """Mean speed should generally decrease with density."""
         result = run_fd_sweep(
             densities=[20, 80, 120],
-            n_steps=100, warmup_steps=30, seed=42,
+            n_steps=100,
+            warmup_steps=30,
+            seed=42,
         )
         speeds = result["measured_speeds"]
         assert speeds[0] > speeds[-1], (
-            f"Speed at rho=20 ({speeds[0]:.1f}) should exceed "
-            f"speed at rho=120 ({speeds[-1]:.1f})"
+            f"Speed at rho=20 ({speeds[0]:.1f}) should exceed speed at rho=120 ({speeds[-1]:.1f})"
         )
 
 
 # ---------------------------------------------------------------------------
 # Emergence
 # ---------------------------------------------------------------------------
+
 
 class TestGiniCoefficient:
     def test_equal_values(self) -> None:
@@ -103,14 +109,20 @@ class TestEmergenceAnalysis:
     def test_gravity_on_has_metrics(self) -> None:
         result = run_emergence_analysis(n_steps=50, seed=42)
         g = result["gravity_on"]
-        for key in ("upstream_deceleration_ms", "variance_ratio",
-                    "gini_initial", "gini_final", "wave_speed_ms"):
+        for key in (
+            "upstream_deceleration_ms",
+            "variance_ratio",
+            "gini_initial",
+            "gini_final",
+            "wave_speed_ms",
+        ):
             assert key in g, f"Missing key {key}"
 
 
 # ---------------------------------------------------------------------------
 # Validation Report
 # ---------------------------------------------------------------------------
+
 
 class TestValidationReport:
     def test_quick_report_generates(self) -> None:
@@ -130,8 +142,7 @@ class TestValidationReport:
         assert r1["emergence"]["score"] == r2["emergence"]["score"]
         assert r1["overall_verdict"] == r2["overall_verdict"]
         # Detailed data points
-        for d1, d2 in zip(r1["fundamental_diagram"]["data"],
-                          r2["fundamental_diagram"]["data"]):
+        for d1, d2 in zip(r1["fundamental_diagram"]["data"], r2["fundamental_diagram"]["data"]):
             assert d1["measured_speed"] == d2["measured_speed"]
         # Emergence detail
         for key in r1["emergence"]["gravity_on"]:

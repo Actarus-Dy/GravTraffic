@@ -83,10 +83,7 @@ def compute_throughput(
     prev_x = prev_positions[:, 0]
     curr_x = positions[:, 0]
 
-    crossed = (
-        ((prev_x < gate_x) & (curr_x >= gate_x))
-        | ((prev_x > gate_x) & (curr_x <= gate_x))
-    )
+    crossed = ((prev_x < gate_x) & (curr_x >= gate_x)) | ((prev_x > gate_x) & (curr_x <= gate_x))
 
     return float(np.sum(crossed)) / dt * 3600.0
 
@@ -142,8 +139,8 @@ def compute_delay(
 
     speeds = np.linalg.norm(velocities, axis=1)
     speeds = np.maximum(speeds, 0.1)  # clamp to avoid division by zero
-    time_actual = 1000.0 / speeds     # seconds to travel 1 km at actual speed
-    time_free = 1000.0 / v_free       # seconds to travel 1 km at free-flow
+    time_actual = 1000.0 / speeds  # seconds to travel 1 km at actual speed
+    time_free = 1000.0 / v_free  # seconds to travel 1 km at free-flow
     return float(np.mean(time_actual - time_free))
 
 

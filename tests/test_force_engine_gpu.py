@@ -98,9 +98,7 @@ class TestGPUForceEngine:
         mass = np.array([3.0, -2.0], dtype=np.float64)
         forces = gpu.compute_all(pos, mass)
 
-        np.testing.assert_allclose(
-            forces[0] + forces[1], [0.0, 0.0], atol=1e-12
-        )
+        np.testing.assert_allclose(forces[0] + forces[1], [0.0, 0.0], atol=1e-12)
 
 
 class TestGPUNotAvailable:

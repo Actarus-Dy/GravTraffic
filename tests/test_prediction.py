@@ -16,13 +16,13 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from gravtraffic.core.simulation import GravSimulation
 from gravtraffic.api.app import app, state
-
+from gravtraffic.core.simulation import GravSimulation
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def sim() -> GravSimulation:
@@ -30,14 +30,18 @@ def sim() -> GravSimulation:
     s = GravSimulation(G_s=5.0, beta=0.5, adaptive_dt=False, dt=0.1)
     rng = np.random.default_rng(42)
     n = 20
-    positions = np.column_stack([
-        rng.uniform(0, 500, n),
-        np.zeros(n),
-    ]).astype(np.float64)
-    velocities = np.column_stack([
-        rng.uniform(10, 30, n),
-        np.zeros(n),
-    ]).astype(np.float64)
+    positions = np.column_stack(
+        [
+            rng.uniform(0, 500, n),
+            np.zeros(n),
+        ]
+    ).astype(np.float64)
+    velocities = np.column_stack(
+        [
+            rng.uniform(10, 30, n),
+            np.zeros(n),
+        ]
+    ).astype(np.float64)
     densities = np.full(n, 40.0, dtype=np.float64)
     s.init_vehicles(positions, velocities, densities)
     # Run a few steps to get non-trivial state
@@ -60,6 +64,7 @@ def client() -> TestClient:
 # ---------------------------------------------------------------------------
 # Clone tests
 # ---------------------------------------------------------------------------
+
 
 class TestClone:
     def test_clone_has_same_state(self, sim: GravSimulation) -> None:
@@ -106,6 +111,7 @@ class TestClone:
 # ---------------------------------------------------------------------------
 # Predict tests
 # ---------------------------------------------------------------------------
+
 
 class TestPredict:
     def test_predict_returns_valid_state(self, sim: GravSimulation) -> None:

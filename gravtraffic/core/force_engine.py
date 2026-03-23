@@ -66,9 +66,7 @@ class ForceEngine:
     # ------------------------------------------------------------------
     # Single-pair force
     # ------------------------------------------------------------------
-    def force_pair(
-        self, m_i: float, m_j: float, dx: float, dy: float
-    ) -> tuple[float, float]:
+    def force_pair(self, m_i: float, m_j: float, dx: float, dy: float) -> tuple[float, float]:
         """Compute the force on particle *i* due to particle *j*.
 
         Parameters
@@ -157,8 +155,7 @@ class ForceEngine:
         n: int = len(masses)
         if positions.shape != (n, 2):
             raise ValueError(
-                f"positions shape {positions.shape} incompatible with "
-                f"{n} masses; expected ({n}, 2)"
+                f"positions shape {positions.shape} incompatible with {n} masses; expected ({n}, 2)"
             )
 
         forces: npt.NDArray[np.float64] = np.zeros((n, 2), dtype=np.float64)
@@ -236,8 +233,7 @@ class ForceEngine:
         n: int = len(masses)
         if positions.shape != (n, 2):
             raise ValueError(
-                f"positions shape {positions.shape} incompatible with "
-                f"{n} masses; expected ({n}, 2)"
+                f"positions shape {positions.shape} incompatible with {n} masses; expected ({n}, 2)"
             )
 
         if n == 0:
@@ -323,16 +319,12 @@ class ForceEngine:
             fy_total = 0.0
 
             if tree_pos is not None:
-                fx, fy = tree_pos.compute_force(
-                    px, py, mi, i, G_s, eps, theta
-                )
+                fx, fy = tree_pos.compute_force(px, py, mi, i, G_s, eps, theta)
                 fx_total += fx
                 fy_total += fy
 
             if tree_neg is not None:
-                fx, fy = tree_neg.compute_force(
-                    px, py, mi, i, G_s, eps, theta
-                )
+                fx, fy = tree_neg.compute_force(px, py, mi, i, G_s, eps, theta)
                 fx_total += fx
                 fy_total += fy
 

@@ -15,9 +15,6 @@ formation, shock propagation, overtaking -- emerge naturally from gravitational
 interactions combined with a physically motivated drag enrichment. No
 car-following rules are coded; all collective behaviour is emergent.
 
-Part of the **Actarus-Dy Software** catalogue (26 applications, 8 domains,
-46 formulas).
-
 ---
 
 ## Quickstart

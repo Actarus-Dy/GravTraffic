@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GravTraffic Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a0f; color: #e0e0e0; }
+
+.header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #2a2a4a;
+}
+.header h1 { font-size: 18px; font-weight: 600; color: #7faaff; }
+.header .subtitle { font-size: 11px; color: #888; margin-left: 12px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.status-dot.connected { background: #4caf50; }
+.status-dot.disconnected { background: #f44336; }
+
+.main { display: flex; height: calc(100vh - 48px); }
+
+.sidebar {
+    width: 280px; min-width: 280px;
+    background: #12121f; padding: 16px;
+    border-right: 1px solid #2a2a4a;
+    overflow-y: auto;
+}
+.sidebar h3 { font-size: 12px; text-transform: uppercase; color: #666; margin: 16px 0 8px; letter-spacing: 1px; }
+.sidebar h3:first-child { margin-top: 0; }
+
+.canvas-area { flex: 1; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: 100%; }
+
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kpi-card {
+    background: #1a1a2e; border-radius: 6px; padding: 10px;
+    border: 1px solid #2a2a4a;
+}
+.kpi-label { font-size: 10px; color: #888; text-transform: uppercase; }
+.kpi-value { font-size: 20px; font-weight: 700; color: #7faaff; margin-top: 2px; }
+.kpi-unit { font-size: 10px; color: #555; }
+
+.btn {
+    padding: 8px 14px; border: 1px solid #3a3a5a; border-radius: 4px;
+    background: #1e1e3a; color: #ccc; cursor: pointer; font-size: 12px;
+    transition: background 0.15s;
+}
+.btn:hover { background: #2a2a4e; }
+.btn.active { background: #2a4a7a; border-color: #5a8abf; color: #fff; }
+.btn.primary { background: #1a5a2a; border-color: #3a8a4a; }
+.btn.primary:hover { background: #2a6a3a; }
+.btn.danger { background: #5a1a1a; border-color: #8a3a3a; }
+
+.controls { display: flex; gap: 6px; flex-wrap: wrap; }
+
+select, input[type=range] {
+    width: 100%; padding: 6px; background: #1a1a2e; border: 1px solid #3a3a5a;
+    border-radius: 4px; color: #ccc; font-size: 12px; margin-top: 4px;
+}
+label { font-size: 11px; color: #aaa; display: block; margin-top: 8px; }
+.range-row { display: flex; align-items: center; gap: 8px; }
+.range-val { font-size: 12px; color: #7faaff; min-width: 40px; text-align: right; }
+
+.legend { display: flex; gap: 12px; margin-top: 8px; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.overlay-info {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(10,10,15,0.85); padding: 8px 12px; border-radius: 6px;
+    font-size: 11px; color: #aaa;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div style="display:flex;align-items:center">
+        <h1>GravTraffic</h1>
+        <span class="subtitle">Janus Gravitational Traffic Simulator (C-01)</span>
+    </div>
+    <div id="connStatus">
+        <span class="status-dot disconnected" id="statusDot"></span>
+        <span id="statusText" style="font-size:12px">Connecting...</span>
+    </div>
+</div>
+
+<div class="main">
+    <div class="sidebar">
+        <h3>KPIs</h3>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Speed</div>
+                <div class="kpi-value" id="kpiSpeed">--</div>
+                <div class="kpi-unit">km/h</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Congestion</div>
+                <div class="kpi-value" id="kpiCongestion">--</div>
+                <div class="kpi-unit">%</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Vehicles</div>
+                <div class="kpi-value" id="kpiVehicles">--</div>
+                <div class="kpi-unit">active</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Step</div>
+                <div class="kpi-value" id="kpiStep">--</div>
+                <div class="kpi-unit">sim step</div>
+            </div>
+        </div>
+
+        <h3>Controls</h3>
+        <div class="controls">
+            <button class="btn primary" id="btnPlay" onclick="sendCmd('start')">Play</button>
+            <button class="btn danger" id="btnStop" onclick="sendCmd('stop')">Pause</button>
+            <button class="btn" onclick="sendCmd('step')">Step</button>
+            <button class="btn" onclick="runPredict()">Predict T+15m</button>
+        </div>
+
+        <h3>Scenario</h3>
+        <select id="scenarioSelect" onchange="loadScenario()">
+            <option value="grid_small">Small Grid (3x3, 30 veh)</option>
+            <option value="grid_large">Large Grid (5x5, 200 veh)</option>
+            <option value="corridor">Highway Corridor (2x8, 100 veh)</option>
+            <option value="bottleneck">Bottleneck (3x3, 80 veh)</option>
+            <option value="dense">Dense Traffic (4x4, 500 veh)</option>
+        </select>
+
+        <h3>Parameters</h3>
+        <label>G_s (gravitational constant)
+            <div class="range-row">
+                <input type="range" id="sliderGs" min="0.5" max="20" step="0.5" value="5.0"
+                       oninput="document.getElementById('valGs').textContent=this.value">
+                <span class="range-val" id="valGs">5.0</span>
+            </div>
+        </label>
+        <label>Vehicles
+            <div class="range-row">
+                <input type="range" id="sliderN" min="10" max="500" step="10" value="100"
+                       oninput="document.getElementById('valN').textContent=this.value">
+                <span class="range-val" id="valN">100</span>
+            </div>
+        </label>
+        <button class="btn" onclick="applyParams()" style="margin-top:10px;width:100%">Apply &amp; Restart</button>
+
+        <h3>Display</h3>
+        <label><input type="checkbox" id="chkHeatmap" checked> Potential heatmap</label>
+        <label><input type="checkbox" id="chkVelocity" checked> Velocity vectors</label>
+        <label><input type="checkbox" id="chkTrails"> Vehicle trails</label>
+
+        <div class="legend" style="margin-top:12px">
+            <div class="legend-item"><div class="legend-dot" style="background:#ff4444"></div>Slow (+mass)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#4488ff"></div>Fast (-mass)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#888"></div>Neutral</div>
+        </div>
+    </div>
+
+    <div class="canvas-area">
+        <canvas id="simCanvas"></canvas>
+        <div class="overlay-info" id="overlayInfo">Waiting for data...</div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+let ws = null;
+let frame = null;
+let predictData = null;
+let showPredict = false;
+let trails = [];
+const MAX_TRAIL = 50;
+let reconnectDelay = 1000;
+const MAX_RECONNECT_DELAY = 30000;
+
+// ============================================================
+// WebSocket
+// ============================================================
+function connect() {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${proto}//${location.host}/ws/stream/potential`);
+
+    ws.onopen = () => {
+        document.getElementById('statusDot').className = 'status-dot connected';
+        document.getElementById('statusText').textContent = 'Connected';
+        reconnectDelay = 1000; // reset on successful connection
+    };
+    ws.onclose = () => {
+        document.getElementById('statusDot').className = 'status-dot disconnected';
+        document.getElementById('statusText').textContent = `Reconnecting in ${(reconnectDelay/1000).toFixed(0)}s...`;
+        setTimeout(connect, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+    };
+    ws.onerror = () => {
+        // onclose will fire after onerror, no need to reconnect here
+        document.getElementById('statusText').textContent = 'Connection error';
+    };
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'frame') {
+            frame = msg;
+            showPredict = false;
+            updateKPIs(msg);
+            // Store trails
+            if (document.getElementById('chkTrails').checked && msg.vehicles) {
+                trails.push(msg.vehicles.map(v => ({x: v.x, y: v.y, type: v.type})));
+                if (trails.length > MAX_TRAIL) trails.shift();
+            }
+        }
+    };
+}
+
+function sendCmd(type) { if (ws && ws.readyState === 1) ws.send(JSON.stringify({type})); }
+
+// ============================================================
+// Scenarios
+// ============================================================
+const SCENARIOS = {
+    grid_small:  { grid_rows:3, grid_cols:3, block_size:150, n_vehicles:30,  G_s:5.0, dt:0.1, seed:42 },
+    grid_large:  { grid_rows:5, grid_cols:5, block_size:200, n_vehicles:200, G_s:5.0, dt:0.1, seed:42 },
+    corridor:    { grid_rows:2, grid_cols:8, block_size:250, n_vehicles:100, G_s:5.0, dt:0.1, seed:42 },
+    bottleneck:  { grid_rows:3, grid_cols:3, block_size:100, n_vehicles:80,  G_s:8.0, dt:0.1, seed:42 },
+    dense:       { grid_rows:4, grid_cols:4, block_size:150, n_vehicles:500, G_s:5.0, dt:0.1, seed:42 },
+};
+
+function loadScenario() {
+    const key = document.getElementById('scenarioSelect').value;
+    const cfg = SCENARIOS[key];
+    document.getElementById('sliderGs').value = cfg.G_s;
+    document.getElementById('valGs').textContent = cfg.G_s;
+    document.getElementById('sliderN').value = cfg.n_vehicles;
+    document.getElementById('valN').textContent = cfg.n_vehicles;
+    if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({type: 'config', config: cfg}));
+    }
+    trails = [];
+}
+
+function applyParams() {
+    const key = document.getElementById('scenarioSelect').value;
+    const cfg = {...SCENARIOS[key]};
+    cfg.G_s = parseFloat(document.getElementById('sliderGs').value);
+    cfg.n_vehicles = parseInt(document.getElementById('sliderN').value);
+    if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({type: 'config', config: cfg}));
+    }
+    trails = [];
+}
+
+// ============================================================
+// Predict
+// ============================================================
+let predicting = false;
+async function runPredict() {
+    if (predicting) return;
+    const btn = document.querySelector('[onclick="runPredict()"]');
+    predicting = true;
+    btn.textContent = 'Predicting...';
+    btn.disabled = true;
+    try {
+        const resp = await fetch('/api/v1/predict?horizon_s=900', {method: 'POST'});
+        if (resp.ok) {
+            predictData = await resp.json();
+            showPredict = true;
+            btn.textContent = 'Showing T+15m';
+        } else {
+            const err = await resp.json().catch(() => ({detail: resp.statusText}));
+            btn.textContent = 'Predict failed';
+            console.error('Predict error:', err);
+        }
+    } catch(e) {
+        btn.textContent = 'Predict error';
+        console.error('Predict failed:', e);
+    } finally {
+        predicting = false;
+        btn.disabled = false;
+        setTimeout(() => { btn.textContent = 'Predict T+15m'; }, 3000);
+    }
+}
+
+// ============================================================
+// KPIs
+// ============================================================
+function updateKPIs(f) {
+    document.getElementById('kpiSpeed').textContent = f.kpi.mean_speed_kmh.toFixed(1);
+    document.getElementById('kpiCongestion').textContent = (f.kpi.congestion_index * 100).toFixed(0);
+    document.getElementById('kpiVehicles').textContent = f.kpi.n_vehicles;
+    document.getElementById('kpiStep').textContent = f.step;
+}
+
+// ============================================================
+// Canvas rendering
+// ============================================================
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * devicePixelRatio;
+    canvas.height = rect.height * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function vehicleColor(type, alpha) {
+    if (type === 'slow') return `rgba(255, 68, 68, ${alpha})`;
+    if (type === 'fast') return `rgba(68, 136, 255, ${alpha})`;
+    return `rgba(136, 136, 136, ${alpha})`;
+}
+
+function render() {
+    const w = canvas.width / devicePixelRatio;
+    const h = canvas.height / devicePixelRatio;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, w, h);
+
+    const data = showPredict ? null : frame;
+    if (!data || !data.vehicles || data.vehicles.length === 0) {
+        document.getElementById('overlayInfo').textContent = frame ? 'No vehicles' : 'Waiting for data...';
+        requestAnimationFrame(render);
+        return;
+    }
+
+    // Compute bounds from vehicles (loop to avoid stack overflow with >65k vehicles)
+    let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+    for (const v of data.vehicles) {
+        if (v.x < xMin) xMin = v.x;
+        if (v.x > xMax) xMax = v.x;
+        if (v.y < yMin) yMin = v.y;
+        if (v.y > yMax) yMax = v.y;
+    }
+    xMin -= 50; xMax += 50; yMin -= 50; yMax += 50;
+    const xRange = xMax - xMin || 1;
+    const yRange = yMax - yMin || 1;
+    const scale = Math.min(w / xRange, h / yRange) * 0.9;
+    const offX = (w - xRange * scale) / 2;
+    const offY = (h - yRange * scale) / 2;
+
+    function toScreen(px, py) {
+        return [(px - xMin) * scale + offX, (yMax - py) * scale + offY];
+    }
+
+    // Heatmap
+    if (document.getElementById('chkHeatmap').checked && data.potential && data.grid_width) {
+        const pot = data.potential;
+        const gw = data.grid_width;
+        const gh = data.grid_height;
+        const pxMin = data.x_min !== undefined ? data.x_min : xMin;
+        const pyMin = data.y_min !== undefined ? data.y_min : yMin;
+        const pxMax = data.x_max !== undefined ? data.x_max : xMax;
+        const pyMax = data.y_max !== undefined ? data.y_max : yMax;
+
+        // Find potential range for normalization
+        let pMin = Infinity, pMax = -Infinity;
+        for (let i = 0; i < pot.length; i++) {
+            if (pot[i] < pMin) pMin = pot[i];
+            if (pot[i] > pMax) pMax = pot[i];
+        }
+        const pRange = Math.max(pMax - pMin, 1e-6);
+
+        const cellW = (pxMax - pxMin) / gw * scale;
+        const cellH = (pyMax - pyMin) / gh * scale;
+
+        for (let row = 0; row < gh; row++) {
+            for (let col = 0; col < gw; col++) {
+                const idx = row * gw + col;
+                const val = (pot[idx] - pMin) / pRange; // 0..1
+                // Red (congestion, low/negative) -> Green (fluid, high/positive)
+                const r = Math.round((1 - val) * 180);
+                const g = Math.round(val * 140);
+                const b = Math.round(40 + val * 60);
+                ctx.fillStyle = `rgba(${r},${g},${b},0.25)`;
+                const cx = pxMin + (col + 0.5) * (pxMax - pxMin) / gw;
+                const cy = pyMin + (row + 0.5) * (pyMax - pyMin) / gh;
+                const [sx, sy] = toScreen(cx, cy);
+                ctx.fillRect(sx - cellW/2, sy - cellH/2, cellW, cellH);
+            }
+        }
+    }
+
+    // Trails
+    if (document.getElementById('chkTrails').checked) {
+        for (let t = 0; t < trails.length; t++) {
+            const alpha = (t / trails.length) * 0.3;
+            for (const v of trails[t]) {
+                const [sx, sy] = toScreen(v.x, v.y);
+                ctx.fillStyle = vehicleColor(v.type, alpha);
+                ctx.beginPath();
+                ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+
+    // Vehicles
+    const vehicles = showPredict && predictData ? predictData.vehicles : data.vehicles;
+    for (const v of vehicles) {
+        const [sx, sy] = toScreen(v.x, v.y);
+
+        // Vehicle dot
+        ctx.fillStyle = vehicleColor(v.type || (v.mass > 0.1 ? 'slow' : v.mass < -0.1 ? 'fast' : 'neutral'), 1.0);
+        ctx.beginPath();
+        ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Velocity vector
+        if (document.getElementById('chkVelocity').checked && v.vx !== undefined) {
+            const vLen = Math.sqrt(v.vx*v.vx + v.vy*v.vy);
+            if (vLen > 0.5) {
+                const arrowLen = Math.min(vLen * 0.8, 20);
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(sx + v.vx / vLen * arrowLen * scale / 50, sy - v.vy / vLen * arrowLen * scale / 50);
+                ctx.stroke();
+            }
+        }
+    }
+
+    // Overlay info
+    const mode = showPredict ? `PREDICTION T+${(predictData.horizon_s/60).toFixed(0)}min` : 'LIVE';
+    document.getElementById('overlayInfo').textContent =
+        `${mode} | ${vehicles.length} vehicles | Scale: ${scale.toFixed(1)}px/m`;
+
+    requestAnimationFrame(render);
+}
+
+// ============================================================
+// Init
+// ============================================================
+connect();
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

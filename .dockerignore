@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.claude
+.pytest_cache
+.ruff_cache
+*.egg-info
+dist
+build
+benchmarks
+tests
+audit_force_signs.py
+*.md
+!pyproject.toml

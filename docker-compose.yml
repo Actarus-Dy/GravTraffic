@@ -1,0 +1,40 @@
+# GravTraffic (C-01) -- Docker Compose
+#
+# Development:  docker compose up
+# Production:   docker compose --profile prod up
+#
+# NOTE: Dev and prod profiles use the same port (8000).
+# Stop the dev service before starting prod, or vice versa.
+
+services:
+  # Development server with hot reload (default, no profile needed)
+  gravtraffic:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./gravtraffic:/app/gravtraffic:ro
+    environment:
+      - GRAVTRAFFIC_CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+    command: >
+      python -m uvicorn gravtraffic.api.app:app
+      --host 0.0.0.0 --port 8000 --reload
+      --reload-dir /app/gravtraffic
+
+  # Production server (docker compose --profile prod up)
+  gravtraffic-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - GRAVTRAFFIC_CORS_ORIGINS=${GRAVTRAFFIC_CORS_ORIGINS:-http://localhost:3000}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    profiles: ["prod"]

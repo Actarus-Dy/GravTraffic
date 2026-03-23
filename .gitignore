@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+
+# Environment / secrets
+.env
+*.env.local
+
+# Data / artifacts
+*.hdf5
+*.npy
+validation_report.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing / linting
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+test-results.xml
+
+# Profiling
+*.prof
+
+# Internal / dev-only files
+audit_force_signs.py
+.claude/
+CLAUDE.md
+install-janus-civil-agents.ps1
+janus_civil_dev_team.md
+GravTraffic_Plan_Technique_C01.md
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Numba cache
+__pycache__/

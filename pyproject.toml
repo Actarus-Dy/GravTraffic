@@ -12,6 +12,7 @@ dependencies = [
     "numpy>=1.26",
     "scipy>=1.12",
     "mesa>=3.0",
+    "networkx>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +33,7 @@ accel = [
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
+    "httpx>=0.27",
     "line-profiler>=4.1",
     "ruff>=0.2",
 ]
